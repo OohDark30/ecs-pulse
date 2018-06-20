@@ -3,7 +3,7 @@
     "logging_level": "debug"
   },
   "ECS_CONNECTION": {
-    "protocol": "https",
+    "protocol": "http",
     "host": "xx.xx.xx.xx",
     "port": "4443",
     "user": "root",
