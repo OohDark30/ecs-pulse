@@ -1,0 +1,21 @@
+{
+  "BASE": {
+    "logging_level": "debug"
+  },
+  "ECS_CONNECTION": {
+    "protocol": "https",
+    "host": "10.246.151.91",
+    "port": "4443",
+    "user": "root",
+    "password": "Ch@ngeMe",
+    "logging_level": "debug"
+  },
+  "DATABASE_CONNECTION": {
+    "protocol": "https",
+    "host": "10.246.151.91",
+    "port": "4443",
+    "user": "root",
+    "password": "Ch@ngeMe",
+    "logging_level": "debug"
+  }
+}
