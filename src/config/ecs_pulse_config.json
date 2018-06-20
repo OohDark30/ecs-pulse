@@ -4,18 +4,17 @@
   },
   "ECS_CONNECTION": {
     "protocol": "https",
-    "host": "10.246.151.91",
+    "host": "xx.xx.xx.xx",
     "port": "4443",
     "user": "root",
-    "password": "Ch@ngeMe",
-    "logging_level": "debug"
+    "password": "xxxxxxxx",
+    "logging_level": "info"
   },
-  "DATABASE_CONNECTION": {
-    "protocol": "https",
-    "host": "10.246.151.91",
-    "port": "4443",
-    "user": "root",
-    "password": "Ch@ngeMe",
-    "logging_level": "debug"
+  "INFLUX_DATABASE_CONNECTION": {
+    "host": "xx.xx.xx.xx",
+    "port": "8086",
+    "user": "abcuser",
+    "password": "password",
+    "databasename": "database_name"
   }
 }
