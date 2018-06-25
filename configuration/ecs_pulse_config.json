@@ -1,0 +1,21 @@
+{
+  "BASE": {
+    "logging_level": "info",
+    "datastore": "influx"
+  },
+  "ECS_CONNECTION": {
+    "protocol": "https",
+    "host": "10.246.151.145",
+    "port": "4443",
+    "user": "root",
+    "password": "ChangeMe",
+    "datafilter": "default"
+  },
+  "INFLUX_DATABASE_CONNECTION": {
+    "host": "10.246.23.215",
+    "port": "8086",
+    "user": "root",
+    "password": "root",
+    "databasename": "ecsdatacollection"
+  }
+}
