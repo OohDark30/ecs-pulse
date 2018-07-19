@@ -83,7 +83,7 @@ class ECSManagementAPI(object):
                              headers=headers, verify=False)
 
             if r.status_code == requests.codes.ok:
-                self.logger.info('ECSManagementAPI::get_local_zone_data()::/dashboard/zones/localzone '
+                self.logger.debug('ECSManagementAPI::get_local_zone_data()::/dashboard/zones/localzone '
                                  'call returned with a 200 status code.')
                 self.response_json = r.json()
                 self.logger.debug('ECSManagementAPI::get_local_zone_data()::r.text() contains: \n' + r.text)
@@ -102,12 +102,135 @@ class ECSManagementAPI(object):
                     self.authentication.connect()
 
                     if self.authentication.token is None:
-                        self.logger.info('ECSManagementAPI::get_local_zone_data()::Token Expired.  Unable '
+                        self.logger.error('ECSManagementAPI::get_local_zone_data()::Token Expired.  Unable '
                                          'to re-authenticate to ECS as configured.  Please validate and try again.')
                         raise ECSException("The ECS Data Collection Module was unable to re-authenticate.")
                         break
                 else:
-                    self.logger.info('ECSManagementAPI::get_local_zone_data()::/dashboard/zones/localzone call failed '
+                    self.logger.error('ECSManagementAPI::get_local_zone_data()::/dashboard/zones/localzone call failed '
+                                     'with a status code of ' + r.status_code)
+                    self.response_json = None
+                    break
+
+        return self.response_json
+
+    def get_local_zone_replication_data(self):
+
+        # Perform ECS Dashboard Local Zone API Call
+        headers = {'X-SDS-AUTH-TOKEN': "'{0}'".format(self.authentication.token), 'content-type': 'application/json'}
+
+        while True:
+            r = requests.get("{0}//dashboard/zones/localzone/replicationgroups".format(self.authentication.url),
+                             headers=headers, verify=False)
+
+            if r.status_code == requests.codes.ok:
+                self.logger.debug('ECSManagementAPI::get_local_zone_replication_data()::/dashboard/zones/localzone/replicationgroups '
+                                 'call returned with a 200 status code.')
+                self.response_json = r.json()
+                self.logger.debug('ECSManagementAPI::get_local_zone_replication_data()::r.text() contains: \n' + r.text)
+
+                if type(self.response_json) is list:
+                    self.logger.debug('ECSManagementAPI::get_local_zone_replication_data()::r.json() returned a list. ')
+                elif type(self.response_json) is dict:
+                    self.logger.debug('ECSManagementAPI::get_local_zone_replication_data()::r.json() returned a dictionary. ')
+                else:
+                    self.logger.debug('ECSManagementAPI::get_local_zone_replication_data()::r.json() returned unknown. ')
+                break
+            else:
+                if r.status.code == requests.codes.unauthorized:
+                    # Attempt to re-authenticate
+                    self.authentication = None
+                    self.authentication.connect()
+
+                    if self.authentication.token is None:
+                        self.logger.error('ECSManagementAPI::get_local_zone_replication_data()::Token Expired.  Unable '
+                                         'to re-authenticate to ECS as configured.  Please validate and try again.')
+                        raise ECSException("The ECS Data Collection Module was unable to re-authenticate.")
+                        break
+                else:
+                    self.logger.error('ECSManagementAPI::get_local_zone_replication_data()::/dashboard/zones/localzone/replicationgroups call failed '
+                                     'with a status code of ' + r.status_code)
+                    self.response_json = None
+                    break
+
+        return self.response_json
+
+    def get_local_zone_replication_failure_data(self):
+
+        # Perform ECS Dashboard Local Zone API Call
+        headers = {'X-SDS-AUTH-TOKEN': "'{0}'".format(self.authentication.token), 'content-type': 'application/json'}
+
+        while True:
+            r = requests.get("{0}//dashboard/zones/localzone/rglinksFailed".format(self.authentication.url),
+                             headers=headers, verify=False)
+
+            if r.status_code == requests.codes.ok:
+                self.logger.debug('ECSManagementAPI::get_local_zone_replication_failure_data()::/dashboard/zones/localzone/rglinksFailed '
+                                 'call returned with a 200 status code.')
+                self.response_json = r.json()
+                self.logger.debug('ECSManagementAPI::get_local_zone_replication_failure_data()::r.text() contains: \n' + r.text)
+
+                if type(self.response_json) is list:
+                    self.logger.debug('ECSManagementAPI::get_local_zone_replication_failure_data()::r.json() returned a list. ')
+                elif type(self.response_json) is dict:
+                    self.logger.debug('ECSManagementAPI::get_local_zone_replication_failure_data()::r.json() returned a dictionary. ')
+                else:
+                    self.logger.debug('ECSManagementAPI::get_local_zone_replication_failure_data()::r.json() returned unknown. ')
+                break
+            else:
+                if r.status.code == requests.codes.unauthorized:
+                    # Attempt to re-authenticate
+                    self.authentication = None
+                    self.authentication.connect()
+
+                    if self.authentication.token is None:
+                        self.logger.error('ECSManagementAPI::get_local_zone_replication_failure_data()::Token Expired.  Unable '
+                                         'to re-authenticate to ECS as configured.  Please validate and try again.')
+                        raise ECSException("The ECS Data Collection Module was unable to re-authenticate.")
+                        break
+                else:
+                    self.logger.error('ECSManagementAPI::get_local_zone_replication_failure_data()::/dashboard/zones/localzone/rglinksFailed call failed '
+                                     'with a status code of ' + r.status_code)
+                    self.response_json = None
+                    break
+
+        return self.response_json
+
+    def get_local_zone_bootstrap_data(self):
+
+        # Perform ECS Dashboard Local Zone Bootstrap API Call
+        headers = {'X-SDS-AUTH-TOKEN': "'{0}'".format(self.authentication.token), 'content-type': 'application/json'}
+
+        while True:
+            r = requests.get("{0}//dashboard/zones/localzone/rglinksBootstrap".format(self.authentication.url),
+                             headers=headers, verify=False)
+
+            if r.status_code == requests.codes.ok:
+                self.logger.debug('ECSManagementAPI::get_local_zone_bootstrap_data()::/dashboard/zones/localzone/rglinksBootstrap '
+                                 'call returned with a 200 status code.')
+                self.response_json = r.json()
+                self.logger.debug('ECSManagementAPI::get_local_zone_bootstrap_data()::r.text() contains: \n' + r.text)
+
+                if type(self.response_json) is list:
+                    self.logger.debug('ECSManagementAPI::get_local_zone_bootstrap_data()::r.json() returned a list. ')
+                elif type(self.response_json) is dict:
+                    self.logger.debug('ECSManagementAPI::get_local_zone_bootstrap_data()::r.json() returned a dictionary. ')
+                else:
+                    self.logger.debug('ECSManagementAPI::get_local_zone_bootstrap_data()::r.json() returned unknown. ')
+                break
+            else:
+                if r.status.code == requests.codes.unauthorized:
+                    # Attempt to re-authenticate
+                    self.authentication = None
+                    self.authentication.connect()
+
+                    if self.authentication.token is None:
+                        self.logger.error('ECSManagementAPI::get_local_zone_bootstrap_data()::Token Expired.  Unable '
+                                         'to re-authenticate to ECS as configured.  Please validate and try again.')
+                        raise ECSException("The ECS Data Collection Module was unable to re-authenticate.")
+                        break
+                else:
+                    self.logger.error('ECSManagementAPI::get_local_zone_bootstrap_data()::/dashboard/zones/localzone/rglinksBootstrap call failed '
                                      'with a status code of ' + r.status_code)
                     self.response_json = None
                     break
@@ -124,7 +247,7 @@ class ECSManagementAPI(object):
                              headers=headers, verify=False)
 
             if r.status_code == requests.codes.ok:
-                self.logger.info('ECSManagementAPI::get_capacity_data()::/object/capacity call returned '
+                self.logger.debug('ECSManagementAPI::get_capacity_data()::/object/capacity call returned '
                                  'with a 200 status code.  Text is: ' + r.text)
                 self.response_json = r.json()
 
@@ -144,12 +267,12 @@ class ECSManagementAPI(object):
                     self.authentication.connect()
 
                     if self.authentication.token is None:
-                        self.logger.info('ECSManagementAPI::get_capacity_data()::Token Expired.  Unable '
+                        self.logger.error('ECSManagementAPI::get_capacity_data()::Token Expired.  Unable '
                                          'to re-authenticate to ECS as configured.  Please validate and try again.')
                         raise ECSException("The ECS Data Collection Module was unable to re-authenticate.")
                         break
                 else:
-                    self.logger.info('ECSManagementAPI::get_capacity_data()::/object/capacity call failed '
+                    self.logger.error('ECSManagementAPI::get_capacity_data()::/object/capacity call failed '
                                      'with a status code of ' + r.status_code)
                     self.response_json = None
                     break
@@ -166,7 +289,7 @@ class ECSManagementAPI(object):
                              headers=headers, verify=False)
 
             if r.status_code == requests.codes.ok:
-                self.logger.info('ECSManagementAPI::get_local_zone_node_data()::'
+                self.logger.debug('ECSManagementAPI::get_local_zone_node_data()::'
                                  '/dashboard/zones/localzone/nodes call returned '
                                  'with a 200 status code.  Text is: ' + r.text)
                 self.response_json = r.json()
@@ -187,13 +310,57 @@ class ECSManagementAPI(object):
                     self.authentication.connect()
 
                     if self.authentication.token is None:
-                        self.logger.info('ECSManagementAPI::get_local_zone_node_data()::Token Expired.  Unable '
+                        self.logger.error('ECSManagementAPI::get_local_zone_node_data()::Token Expired.  Unable '
                                          'to re-authenticate to ECS as configured.  Please validate and try again.')
                         raise ECSException("The ECS Data Collection Module was unable to re-authenticate.")
                         break
                 else:
-                    self.logger.info('ECSManagementAPI::get_local_zone_node_data()'
+                    self.logger.error('ECSManagementAPI::get_local_zone_node_data()'
                                      '::/dashboard/zones/localzone/nodes call failed '
+                                     'with a status code of ' + r.status_code)
+                    self.response_json = None
+                    break
+
+        return self.response_json
+
+    def get_local_zone_disk_data(self):
+
+        # Perform ECS Capacity API Call
+        headers = {'X-SDS-AUTH-TOKEN': "'{0}'".format(self.authentication.token), 'content-type': 'application/json'}
+
+        while True:
+            r = requests.get("{0}//dashboard/zones/localzone/disks".format(self.authentication.url),
+                             headers=headers, verify=False)
+
+            if r.status_code == requests.codes.ok:
+                self.logger.debug('ECSManagementAPI::get_local_zone_disk_data()::'
+                                 '/dashboard/zones/localzone/disks call returned '
+                                 'with a 200 status code.  Text is: ' + r.text)
+                self.response_json = r.json()
+
+                self.logger.debug('ECSManagementAPI::get_local_zone_disk_data()::r.text() contains: \n' + r.text)
+
+                if type(self.response_json) is list:
+                    self.logger.debug('ECSManagementAPI::get_local_zone_disk_data()::r.json() returned a list. ')
+                elif type(self.response_json) is dict:
+                    self.logger.debug('ECSManagementAPI::get_local_zone_disk_data()::r.json() returned a dictionary. ')
+                else:
+                    self.logger.debug('ECSManagementAPI::get_local_zone_disk_data()::r.json() returned unknown. ')
+                break
+            else:
+                if r.status.code == requests.codes.unauthorized:
+                    # Attempt to re-authenticate
+                    self.authentication = None
+                    self.authentication.connect()
+
+                    if self.authentication.token is None:
+                        self.logger.error('ECSManagementAPI::get_local_zone_disk_data()::Token Expired.  Unable '
+                                         'to re-authenticate to ECS as configured.  Please validate and try again.')
+                        raise ECSException("The ECS Data Collection Module was unable to re-authenticate.")
+                        break
+                else:
+                    self.logger.error('ECSManagementAPI::get_local_zone_disk_data()'
+                                     '::/dashboard/zones/localzone/disks call failed '
                                      'with a status code of ' + r.status_code)
                     self.response_json = None
                     break
