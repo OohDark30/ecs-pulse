@@ -52,6 +52,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": null,
+  "iteration": 1532048453215,
   "links": [],
   "panels": [
     {
@@ -150,7 +151,13 @@
               }
             ]
           ],
-          "tags": []
+          "tags": [
+            {
+              "key": "VDC",
+              "operator": "=~",
+              "value": "/^$VDC$/"
+            }
+          ]
         }
       ],
       "thresholds": "",
@@ -191,7 +198,7 @@
         "x": 4,
         "y": 0
       },
-      "id": 5,
+      "id": 6,
       "interval": null,
       "links": [],
       "mappingType": 1,
@@ -228,7 +235,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "alias": "Total Reserved Capacity",
+          "alias": "Cluster Used Capacity",
           "groupBy": [
             {
               "params": [
@@ -252,7 +259,7 @@
             [
               {
                 "params": [
-                  "diskSpaceReservedCurrent"
+                  "diskSpaceAllocatedCurrent"
                 ],
                 "type": "field"
               },
@@ -262,11 +269,17 @@
               }
             ]
           ],
-          "tags": []
+          "tags": [
+            {
+              "key": "VDC",
+              "operator": "=~",
+              "value": "/^$VDC$/"
+            }
+          ]
         }
       ],
       "thresholds": "",
-      "title": "Total Reserved Capacity",
+      "title": "Cluster Used Capacity",
       "type": "singlestat",
       "valueFontSize": "80%",
       "valueMaps": [
@@ -374,7 +387,13 @@
               }
             ]
           ],
-          "tags": []
+          "tags": [
+            {
+              "key": "VDC",
+              "operator": "=~",
+              "value": "/^$VDC$/"
+            }
+          ]
         }
       ],
       "thresholds": "",
@@ -415,7 +434,7 @@
         "x": 12,
         "y": 0
       },
-      "id": 6,
+      "id": 5,
       "interval": null,
       "links": [],
       "mappingType": 1,
@@ -452,7 +471,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "alias": "Cluster Used Capacity",
+          "alias": "Total Reserved Capacity",
           "groupBy": [
             {
               "params": [
@@ -476,7 +495,7 @@
             [
               {
                 "params": [
-                  "diskSpaceAllocatedCurrent"
+                  "diskSpaceReservedCurrent"
                 ],
                 "type": "field"
               },
@@ -486,11 +505,17 @@
               }
             ]
           ],
-          "tags": []
+          "tags": [
+            {
+              "key": "VDC",
+              "operator": "=~",
+              "value": "/^$VDC$/"
+            }
+          ]
         }
       ],
       "thresholds": "",
-      "title": "Cluster Used Capacity",
+      "title": "Cluster Reserved Capacity",
       "type": "singlestat",
       "valueFontSize": "80%",
       "valueMaps": [
@@ -572,7 +597,13 @@
               }
             ]
           ],
-          "tags": []
+          "tags": [
+            {
+              "key": "VDC",
+              "operator": "=~",
+              "value": "/^$VDC$/"
+            }
+          ]
         },
         {
           "alias": "Geo Copy",
@@ -609,7 +640,13 @@
               }
             ]
           ],
-          "tags": []
+          "tags": [
+            {
+              "key": "VDC",
+              "operator": "=~",
+              "value": "/^$VDC$/"
+            }
+          ]
         },
         {
           "alias": "Protection Overhead",
@@ -646,7 +683,13 @@
               }
             ]
           ],
-          "tags": []
+          "tags": [
+            {
+              "key": "VDC",
+              "operator": "=~",
+              "value": "/^$VDC$/"
+            }
+          ]
         },
         {
           "alias": "System Metadata",
@@ -683,7 +726,13 @@
               }
             ]
           ],
-          "tags": []
+          "tags": [
+            {
+              "key": "VDC",
+              "operator": "=~",
+              "value": "/^$VDC$/"
+            }
+          ]
         },
         {
           "alias": "User Data",
@@ -720,7 +769,13 @@
               }
             ]
           ],
-          "tags": []
+          "tags": [
+            {
+              "key": "VDC",
+              "operator": "=~",
+              "value": "/^$VDC$/"
+            }
+          ]
         }
       ],
       "title": "Cluster Used Capacity Detail",
@@ -732,7 +787,28 @@
   "style": "dark",
   "tags": [],
   "templating": {
-    "list": []
+    "list": [
+      {
+        "allValue": null,
+        "current": {},
+        "datasource": "${DS_ECSAPIDATA32}",
+        "hide": 0,
+        "includeAll": false,
+        "label": "VDC",
+        "multi": false,
+        "name": "VDC",
+        "options": [],
+        "query": "SHOW TAG VALUES WITH KEY = \"VDC\"",
+        "refresh": 1,
+        "regex": "",
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      }
+    ]
   },
   "time": {
     "from": "now-6h",
@@ -766,5 +842,5 @@
   "timezone": "",
   "title": "ECS 3.2 Cluster Capacity",
   "uid": "45FeirHmk",
-  "version": 6
+  "version": 10
 }

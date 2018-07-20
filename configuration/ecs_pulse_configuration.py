@@ -40,6 +40,8 @@ class ECSPulseConfiguration(object):
         self.port = parser[ECS_CONNECTION_CONFIG]['port']
         self.user = parser[ECS_CONNECTION_CONFIG]['user']
         self.password = parser[ECS_CONNECTION_CONFIG]['password']
+        self.dataType = parser[ECS_CONNECTION_CONFIG]['dataType']
+        self.category = parser[ECS_CONNECTION_CONFIG]['category']
 
         # Set logging level
         logging_level_raw = parser[BASE_CONFIG]['logging_level']
@@ -68,3 +70,10 @@ class ECSPulseConfiguration(object):
         if logging_level_raw not in ['debug', 'info', 'warning', 'error']:
             raise InvalidConfigurationException(
                 "Logging level can be only one of ['debug', 'info', 'warning', 'error']")
+
+        # If either dataType or category are missing set them to default
+        if not self.dataType:
+            self.dataType = "default"
+
+        if not self.category:
+            self.category = "default"
