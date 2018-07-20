@@ -8,6 +8,6 @@ It will then parse them using the GROK filter which will strip out the individua
 
 Finally, it will add them to Elasticsearch in daily indices prefixed with "ecs-access-index-".
 
-Note
+Note the 172.17.0.x subnet in the host setting for the ElasticSearch output plugin.  This is the subnet for the Docker network. Set what's appropriate for your environment.
 
 
