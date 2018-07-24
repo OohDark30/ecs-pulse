@@ -3,19 +3,36 @@
     "logging_level": "info",
     "datastore": "influx"
   },
-  "ECS_CONNECTION": {
+  "ECS_CONNECTION": [ {
     "protocol": "https",
     "host": "xx.xx.xx.xx",
     "port": "4443",
     "user": "root",
     "password": "",
     "datafilter": "default"
-  },
+  }
+  {
+    "protocol": "https",
+    "host": "xx.xx.xx.xx",
+    "port": "4443",
+    "user": "root",
+    "password": "",
+    "datafilter": "default"
+  }],
   "INFLUX_DATABASE_CONNECTION": {
     "host": "xx.xx.xx.xx",
     "port": "8086",
     "user": "root",
     "password": "root",
     "databasename": "ecsdatacollection"
+  },
+  "ECS_API_POLLING_INTERVALS": {
+    "ecs_collect_local_zone_data()": "30",
+    "ecs_collect_local_zone_replication_data()": "30",
+    "ecs_collect_local_zone_replication_failure_data()": "30",
+    "ecs_collect_local_zone_bootstrap_data()": "30",
+    "ecs_collect_capacity_data()": "30",
+    "ecs_collect_local_zone_node_data()": "30",
+    "ecs_collect_local_zone_disk_data()": "30"
   }
 }

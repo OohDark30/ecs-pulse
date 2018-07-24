@@ -59,7 +59,7 @@ class ECSAuthentication(object):
             self.token = r.headers['X-SDS-AUTH-TOKEN']
         else:
             self.logger.info('ECSManagementAPI::connect()::login call '
-                             'failed with a status code of ' + r.status_code)
+                             'failed with a status code of ' + str(r.status_code))
             self.token = None
 
 
@@ -96,7 +96,7 @@ class ECSManagementAPI(object):
                     self.logger.debug('ECSManagementAPI::get_local_zone_data()::r.json() returned unknown. ')
                 break
             else:
-                if r.status.code == requests.codes.unauthorized:
+                if r.status_code == requests.codes.unauthorized:
                     # Attempt to re-authenticate
                     self.authentication = None
                     self.authentication.connect()
@@ -137,7 +137,7 @@ class ECSManagementAPI(object):
                     self.logger.debug('ECSManagementAPI::get_local_zone_replication_data()::r.json() returned unknown. ')
                 break
             else:
-                if r.status.code == requests.codes.unauthorized:
+                if r.status_code == requests.codes.unauthorized:
                     # Attempt to re-authenticate
                     self.authentication = None
                     self.authentication.connect()
@@ -178,7 +178,7 @@ class ECSManagementAPI(object):
                     self.logger.debug('ECSManagementAPI::get_local_zone_replication_failure_data()::r.json() returned unknown. ')
                 break
             else:
-                if r.status.code == requests.codes.unauthorized:
+                if r.status_code == requests.codes.unauthorized:
                     # Attempt to re-authenticate
                     self.authentication = None
                     self.authentication.connect()
@@ -219,7 +219,7 @@ class ECSManagementAPI(object):
                     self.logger.debug('ECSManagementAPI::get_local_zone_bootstrap_data()::r.json() returned unknown. ')
                 break
             else:
-                if r.status.code == requests.codes.unauthorized:
+                if r.status_code == requests.codes.unauthorized:
                     # Attempt to re-authenticate
                     self.authentication = None
                     self.authentication.connect()
@@ -261,7 +261,7 @@ class ECSManagementAPI(object):
                     self.logger.debug('ECSManagementAPI::get_capacity_data()::r.json() returned unknown. ')
                 break
             else:
-                if r.status.code == requests.codes.unauthorized:
+                if r.status_code == requests.codes.unauthorized:
                     # Attempt to re-authenticate
                     self.authentication = None
                     self.authentication.connect()
@@ -304,7 +304,7 @@ class ECSManagementAPI(object):
                     self.logger.debug('ECSManagementAPI::get_local_zone_node_data()::r.json() returned unknown. ')
                 break
             else:
-                if r.status.code == requests.codes.unauthorized:
+                if r.status_code == requests.codes.unauthorized:
                     # Attempt to re-authenticate
                     self.authentication = None
                     self.authentication.connect()
@@ -348,7 +348,7 @@ class ECSManagementAPI(object):
                     self.logger.debug('ECSManagementAPI::get_local_zone_disk_data()::r.json() returned unknown. ')
                 break
             else:
-                if r.status.code == requests.codes.unauthorized:
+                if r.status_code == requests.codes.unauthorized:
                     # Attempt to re-authenticate
                     self.authentication = None
                     self.authentication.connect()

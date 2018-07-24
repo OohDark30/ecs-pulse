@@ -4,11 +4,13 @@ DELL EMC ECS API Data Collection Module.
 import logging
 import os
 import json
+import numbers
 
 # Constants
 BASE_CONFIG = 'BASE'                                          # Base Configuration Section
 ECS_CONNECTION_CONFIG = 'ECS_CONNECTION'                      # ECS Connection Configuration Section
 DATABASE_CONNECTION_CONFIG = 'INFLUX_DATABASE_CONNECTION'     # Influx Database Connection Configuration Section
+ECS_API_POLLING_INTERVALS = 'ECS_API_POLLING_INTERVALS'       # ECS API Call Interval Configuration Section
 
 
 class InvalidConfigurationException(Exception):
@@ -35,13 +37,7 @@ class ECSPulseConfiguration(object):
                                                 "the configuration file: " + e.message)
 
         # We parsed the configuration file now lets grab values
-        self.protocol = parser[ECS_CONNECTION_CONFIG]['protocol']
-        self.host = parser[ECS_CONNECTION_CONFIG]['host']
-        self.port = parser[ECS_CONNECTION_CONFIG]['port']
-        self.user = parser[ECS_CONNECTION_CONFIG]['user']
-        self.password = parser[ECS_CONNECTION_CONFIG]['password']
-        self.dataType = parser[ECS_CONNECTION_CONFIG]['dataType']
-        self.category = parser[ECS_CONNECTION_CONFIG]['category']
+        self.ecsconnections = parser[ECS_CONNECTION_CONFIG]
 
         # Set logging level
         logging_level_raw = parser[BASE_CONFIG]['logging_level']
@@ -54,26 +50,38 @@ class ECSPulseConfiguration(object):
         self.database_password = parser[DATABASE_CONNECTION_CONFIG]['password']
         self.database_name = parser[DATABASE_CONNECTION_CONFIG]['databasename']
 
-        # Validate values
-        if not self.protocol:
-            raise InvalidConfigurationException("The ECS Management protocol is not "
-                                                "configured in the module configuration")
-        if not self.host:
-            raise InvalidConfigurationException("The ECS Management Host is not configured in the module configuration")
-        if not self.port:
-            raise InvalidConfigurationException("The ECS Management port is not configured in the module configuration")
-        if not self.user:
-            raise InvalidConfigurationException("The ECS Management User is not configured in the module configuration")
-        if not self.password:
-            raise InvalidConfigurationException("The ECS Management Users password is not configured "
-                                                "in the module configuration")
+        # Grab ECS API Polling Intervals
+        self.modules_intervals = parser[ECS_API_POLLING_INTERVALS]
+
+        # Validate logging level
         if logging_level_raw not in ['debug', 'info', 'warning', 'error']:
             raise InvalidConfigurationException(
                 "Logging level can be only one of ['debug', 'info', 'warning', 'error']")
 
-        # If either dataType or category are missing set them to default
-        if not self.dataType:
-            self.dataType = "default"
+        # Iterate through ECS API Module Interval Configuration and make sure intervals are numeric greater than 0
+        for i, j in self.modules_intervals.items():
+            if not j.isnumeric():
+                raise InvalidConfigurationException("The ECS API Polling Interval of " + j + " for API Call " + i +
+                                                    " is not numeric.")
 
-        if not self.category:
-            self.category = "default"
+        # Iterate through all configured ECS connections and validate connection info
+        for ecsconnection in self.ecsconnections:
+            # Validate ECS Connections values
+            if not ecsconnection['protocol']:
+                raise InvalidConfigurationException("The ECS Management protocol is not "
+                                                    "configured in the module configuration")
+            if not ecsconnection['host']:
+                raise InvalidConfigurationException("The ECS Management Host is not configured in the module configuration")
+            if not ecsconnection['port']:
+                raise InvalidConfigurationException("The ECS Management port is not configured in the module configuration")
+            if not ecsconnection['user']:
+                raise InvalidConfigurationException("The ECS Management User is not configured in the module configuration")
+            if not ecsconnection['password']:
+                raise InvalidConfigurationException("The ECS Management Users password is not configured "
+                                                    "in the module configuration")
+            # Validate API query parameters
+            if not ecsconnection['dataType']:
+                ecsconnection['dataType'] = "default"
+
+            if not ecsconnection['category']:
+                ecsconnection['category'] = "default"
