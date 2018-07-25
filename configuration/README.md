@@ -33,9 +33,12 @@ We've provided two sample configuration files:
   This is a dictionary that contains the names of the ECSManagementAPI class methods that are used to perform 
   data extraction along with a numeric value that defines the polling interval in seconds to be used to call the method.
   
-`  "ecs_collect_local_zone_data()": "30", 
+  "ecs_collect_local_zone_data()": "30", 
   
-  "ecs_collect_local_zone_replication_data()": "60",`
+  "ecs_collect_local_zone_replication_data()": "60",
+  
+  Currently their are 7 methods in ECSManagementAPI class.  This can also be used to determine what methods should be called i.e. data     to pull.  If for some reason a user is not interested in replication data they can remove / comment out the    
+  "ecs_collect_local_zone_replication_data()" line
   
 - ecs_vdc_lookup.sample: Change file suffix from .sample to .json and configure as needed
   This contains a manual map of ip addresses to ECS VDC name.  This is a temporary setup workaround till we 
