@@ -54,7 +54,7 @@ class ECSAuthentication(object):
 
         self.logger.info('ECSAuthentication::connect()::login call to ECS returned with status code: ' + str(r.status_code))
         if r.status_code == requests.codes.ok:
-            self.logger.debug('ECSAuthentication::connect()::login call returned with a 200 status code.  '
+            self.logger.info('ECSAuthentication::connect()::login call returned with a 200 status code.  '
                               'X-SDS-AUTH-TOKEN Header contains: ' + r.headers['X-SDS-AUTH-TOKEN'])
             self.token = r.headers['X-SDS-AUTH-TOKEN']
         else:
@@ -69,16 +69,17 @@ class ECSManagementAPI(object):
     """
 
     def __init__(self, authentication, logger, response_json=None):
+        self.ecs_authentication_failure = int('497')
         self.authentication = authentication
         self.response_json = response_json
         self.logger = logger
 
     def get_local_zone_data(self):
 
-        # Perform ECS Dashboard Local Zone API Call
-        headers = {'X-SDS-AUTH-TOKEN': "'{0}'".format(self.authentication.token), 'content-type': 'application/json'}
-
         while True:
+            # Perform ECS Dashboard Local Zone API Call
+            headers = {'X-SDS-AUTH-TOKEN': "'{0}'".format(self.authentication.token), 'content-type': 'application/json'}
+
             r = requests.get("{0}//dashboard/zones/localzone".format(self.authentication.url),
                              headers=headers, verify=False)
 
@@ -96,9 +97,9 @@ class ECSManagementAPI(object):
                     self.logger.debug('ECSManagementAPI::get_local_zone_data()::r.json() returned unknown. ')
                 break
             else:
-                if r.status_code == requests.codes.unauthorized:
+                if r.status_code == self.ecs_authentication_failure:
                     # Attempt to re-authenticate
-                    self.authentication = None
+                    self.authentication.token = None
                     self.authentication.connect()
 
                     if self.authentication.token is None:
@@ -108,7 +109,7 @@ class ECSManagementAPI(object):
                         break
                 else:
                     self.logger.error('ECSManagementAPI::get_local_zone_data()::/dashboard/zones/localzone call failed '
-                                     'with a status code of ' + r.status_code)
+                                     'with a status code of ' + str(r.status_code))
                     self.response_json = None
                     break
 
@@ -116,10 +117,10 @@ class ECSManagementAPI(object):
 
     def get_local_zone_replication_data(self):
 
-        # Perform ECS Dashboard Local Zone API Call
-        headers = {'X-SDS-AUTH-TOKEN': "'{0}'".format(self.authentication.token), 'content-type': 'application/json'}
-
         while True:
+            # Perform ECS Dashboard Local Zone API Call
+            headers = {'X-SDS-AUTH-TOKEN': "'{0}'".format(self.authentication.token), 'content-type': 'application/json'}
+
             r = requests.get("{0}//dashboard/zones/localzone/replicationgroups".format(self.authentication.url),
                              headers=headers, verify=False)
 
@@ -137,9 +138,9 @@ class ECSManagementAPI(object):
                     self.logger.debug('ECSManagementAPI::get_local_zone_replication_data()::r.json() returned unknown. ')
                 break
             else:
-                if r.status_code == requests.codes.unauthorized:
+                if r.status_code == self.ecs_authentication_failure:
                     # Attempt to re-authenticate
-                    self.authentication = None
+                    self.authentication.token = None
                     self.authentication.connect()
 
                     if self.authentication.token is None:
@@ -149,7 +150,7 @@ class ECSManagementAPI(object):
                         break
                 else:
                     self.logger.error('ECSManagementAPI::get_local_zone_replication_data()::/dashboard/zones/localzone/replicationgroups call failed '
-                                     'with a status code of ' + r.status_code)
+                                     'with a status code of ' + str(r.status_code))
                     self.response_json = None
                     break
 
@@ -157,10 +158,10 @@ class ECSManagementAPI(object):
 
     def get_local_zone_replication_failure_data(self):
 
-        # Perform ECS Dashboard Local Zone API Call
-        headers = {'X-SDS-AUTH-TOKEN': "'{0}'".format(self.authentication.token), 'content-type': 'application/json'}
-
         while True:
+            # Perform ECS Dashboard Local Zone API Call
+            headers = {'X-SDS-AUTH-TOKEN': "'{0}'".format(self.authentication.token), 'content-type': 'application/json'}
+
             r = requests.get("{0}//dashboard/zones/localzone/rglinksFailed".format(self.authentication.url),
                              headers=headers, verify=False)
 
@@ -178,9 +179,9 @@ class ECSManagementAPI(object):
                     self.logger.debug('ECSManagementAPI::get_local_zone_replication_failure_data()::r.json() returned unknown. ')
                 break
             else:
-                if r.status_code == requests.codes.unauthorized:
+                if r.status_code == self.ecs_authentication_failure:
                     # Attempt to re-authenticate
-                    self.authentication = None
+                    self.authentication.token = None
                     self.authentication.connect()
 
                     if self.authentication.token is None:
@@ -190,7 +191,7 @@ class ECSManagementAPI(object):
                         break
                 else:
                     self.logger.error('ECSManagementAPI::get_local_zone_replication_failure_data()::/dashboard/zones/localzone/rglinksFailed call failed '
-                                     'with a status code of ' + r.status_code)
+                                     'with a status code of ' + str(r.status_code))
                     self.response_json = None
                     break
 
@@ -198,10 +199,10 @@ class ECSManagementAPI(object):
 
     def get_local_zone_bootstrap_data(self):
 
-        # Perform ECS Dashboard Local Zone Bootstrap API Call
-        headers = {'X-SDS-AUTH-TOKEN': "'{0}'".format(self.authentication.token), 'content-type': 'application/json'}
-
         while True:
+            # Perform ECS Dashboard Local Zone API Call
+            headers = {'X-SDS-AUTH-TOKEN': "'{0}'".format(self.authentication.token), 'content-type': 'application/json'}
+
             r = requests.get("{0}//dashboard/zones/localzone/rglinksBootstrap".format(self.authentication.url),
                              headers=headers, verify=False)
 
@@ -219,9 +220,9 @@ class ECSManagementAPI(object):
                     self.logger.debug('ECSManagementAPI::get_local_zone_bootstrap_data()::r.json() returned unknown. ')
                 break
             else:
-                if r.status_code == requests.codes.unauthorized:
+                if r.status_code == self.ecs_authentication_failure:
                     # Attempt to re-authenticate
-                    self.authentication = None
+                    self.authentication.token = None
                     self.authentication.connect()
 
                     if self.authentication.token is None:
@@ -231,7 +232,7 @@ class ECSManagementAPI(object):
                         break
                 else:
                     self.logger.error('ECSManagementAPI::get_local_zone_bootstrap_data()::/dashboard/zones/localzone/rglinksBootstrap call failed '
-                                     'with a status code of ' + r.status_code)
+                                     'with a status code of ' + str(r.status_code))
                     self.response_json = None
                     break
 
@@ -239,10 +240,10 @@ class ECSManagementAPI(object):
 
     def get_capacity_data(self):
 
-        # Perform ECS Capacity API Call
-        headers = {'X-SDS-AUTH-TOKEN': "'{0}'".format(self.authentication.token), 'content-type': 'application/json'}
-
         while True:
+            # Perform ECS Dashboard Local Zone API Call
+            headers = {'X-SDS-AUTH-TOKEN': "'{0}'".format(self.authentication.token), 'content-type': 'application/json'}
+
             r = requests.get("{0}//object/capacity.json".format(self.authentication.url),
                              headers=headers, verify=False)
 
@@ -261,9 +262,9 @@ class ECSManagementAPI(object):
                     self.logger.debug('ECSManagementAPI::get_capacity_data()::r.json() returned unknown. ')
                 break
             else:
-                if r.status_code == requests.codes.unauthorized:
+                if r.status_code == self.ecs_authentication_failure:
                     # Attempt to re-authenticate
-                    self.authentication = None
+                    self.authentication.token = None
                     self.authentication.connect()
 
                     if self.authentication.token is None:
@@ -273,7 +274,7 @@ class ECSManagementAPI(object):
                         break
                 else:
                     self.logger.error('ECSManagementAPI::get_capacity_data()::/object/capacity call failed '
-                                     'with a status code of ' + r.status_code)
+                                     'with a status code of ' + str(r.status_code))
                     self.response_json = None
                     break
 
@@ -281,10 +282,10 @@ class ECSManagementAPI(object):
 
     def get_local_zone_node_data(self):
 
-        # Perform ECS Capacity API Call
-        headers = {'X-SDS-AUTH-TOKEN': "'{0}'".format(self.authentication.token), 'content-type': 'application/json'}
-
         while True:
+            # Perform ECS Dashboard Local Zone API Call
+            headers = {'X-SDS-AUTH-TOKEN': "'{0}'".format(self.authentication.token), 'content-type': 'application/json'}
+
             r = requests.get("{0}//dashboard/zones/localzone/nodes".format(self.authentication.url),
                              headers=headers, verify=False)
 
@@ -304,9 +305,9 @@ class ECSManagementAPI(object):
                     self.logger.debug('ECSManagementAPI::get_local_zone_node_data()::r.json() returned unknown. ')
                 break
             else:
-                if r.status_code == requests.codes.unauthorized:
+                if r.status_code == self.ecs_authentication_failure:
                     # Attempt to re-authenticate
-                    self.authentication = None
+                    self.authentication.token = None
                     self.authentication.connect()
 
                     if self.authentication.token is None:
@@ -317,7 +318,7 @@ class ECSManagementAPI(object):
                 else:
                     self.logger.error('ECSManagementAPI::get_local_zone_node_data()'
                                      '::/dashboard/zones/localzone/nodes call failed '
-                                     'with a status code of ' + r.status_code)
+                                     'with a status code of ' + str(r.status_code))
                     self.response_json = None
                     break
 
@@ -325,10 +326,10 @@ class ECSManagementAPI(object):
 
     def get_local_zone_disk_data(self):
 
-        # Perform ECS Capacity API Call
-        headers = {'X-SDS-AUTH-TOKEN': "'{0}'".format(self.authentication.token), 'content-type': 'application/json'}
-
         while True:
+            # Perform ECS Dashboard Local Zone API Call
+            headers = {'X-SDS-AUTH-TOKEN': "'{0}'".format(self.authentication.token), 'content-type': 'application/json'}
+
             r = requests.get("{0}//dashboard/zones/localzone/disks".format(self.authentication.url),
                              headers=headers, verify=False)
 
@@ -348,9 +349,9 @@ class ECSManagementAPI(object):
                     self.logger.debug('ECSManagementAPI::get_local_zone_disk_data()::r.json() returned unknown. ')
                 break
             else:
-                if r.status_code == requests.codes.unauthorized:
+                if r.status_code == self.ecs_authentication_failure:
                     # Attempt to re-authenticate
-                    self.authentication = None
+                    self.authentication.token = None
                     self.authentication.connect()
 
                     if self.authentication.token is None:
@@ -361,7 +362,7 @@ class ECSManagementAPI(object):
                 else:
                     self.logger.error('ECSManagementAPI::get_local_zone_disk_data()'
                                      '::/dashboard/zones/localzone/disks call failed '
-                                     'with a status code of ' + r.status_code)
+                                     'with a status code of ' + str(r.status_code))
                     self.response_json = None
                     break
 
