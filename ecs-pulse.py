@@ -63,31 +63,35 @@ class ECSDataCollection (threading.Thread):
         logger.info(MODULE_NAME + '::ECSDataCollection()::init method of class called')
 
     def run(self):
-        self.logger.info(MODULE_NAME + '::ECSDataCollection()::Starting thread with method: ' + self.method)
+        try:
+            self.logger.info(MODULE_NAME + '::ECSDataCollection()::Starting thread with method: ' + self.method)
 
-        if self.method == 'ecs_collect_capacity_data()':
-            ecs_collect_capacity_data(self.influxclient, self.logger, self.ecsmanagmentapi, self.pollinginterval)
-        else:
-            if self.method == 'ecs_collect_local_zone_data()':
-                ecs_collect_local_zone_data(self.influxclient, self.logger, self.ecsmanagmentapi, self.pollinginterval)
+            if self.method == 'ecs_collect_capacity_data()':
+                ecs_collect_capacity_data(self.influxclient, self.logger, self.ecsmanagmentapi, self.pollinginterval)
             else:
-                if self.method == 'ecs_collect_local_zone_node_data()':
-                    ecs_collect_local_zone_node_data(self.influxclient, self.logger, self.ecsmanagmentapi, self.pollinginterval)
+                if self.method == 'ecs_collect_local_zone_data()':
+                    ecs_collect_local_zone_data(self.influxclient, self.logger, self.ecsmanagmentapi, self.pollinginterval)
                 else:
-                    if self.method == 'ecs_collect_local_zone_disk_data()':
-                        ecs_collect_local_zone_disk_data(self.influxclient, self.logger, self.ecsmanagmentapi, self.pollinginterval)
+                    if self.method == 'ecs_collect_local_zone_node_data()':
+                        ecs_collect_local_zone_node_data(self.influxclient, self.logger, self.ecsmanagmentapi, self.pollinginterval)
                     else:
-                        if self.method == 'ecs_collect_local_zone_replication_data()':
-                            ecs_collect_local_zone_replication_data(self.influxclient, self.logger, self.ecsmanagmentapi, self.pollinginterval)
+                        if self.method == 'ecs_collect_local_zone_disk_data()':
+                            ecs_collect_local_zone_disk_data(self.influxclient, self.logger, self.ecsmanagmentapi, self.pollinginterval)
                         else:
-                            if self.method == 'ecs_collect_local_zone_replication_failure_data()':
-                                ecs_collect_local_zone_replication_failure_data(self.influxclient, self.logger, self.ecsmanagmentapi, self.pollinginterval)
+                            if self.method == 'ecs_collect_local_zone_replication_data()':
+                                ecs_collect_local_zone_replication_data(self.influxclient, self.logger, self.ecsmanagmentapi, self.pollinginterval)
                             else:
-                                if self.method == 'ecs_collect_local_zone_bootstrap_data()':
-                                    ecs_collect_local_zone_bootstrap_data(self.influxclient, self.logger, self.ecsmanagmentapi, self.pollinginterval)
+                                if self.method == 'ecs_collect_local_zone_replication_failure_data()':
+                                    ecs_collect_local_zone_replication_failure_data(self.influxclient, self.logger, self.ecsmanagmentapi, self.pollinginterval)
                                 else:
-                                    self.logger.info(MODULE_NAME + '::ECSDataCollection()::Requested method '
-                                                     + self.method + ' is not supported.')
+                                    if self.method == 'ecs_collect_local_zone_bootstrap_data()':
+                                        ecs_collect_local_zone_bootstrap_data(self.influxclient, self.logger, self.ecsmanagmentapi, self.pollinginterval)
+                                    else:
+                                        self.logger.info(MODULE_NAME + '::ECSDataCollection()::Requested method '
+                                                         + self.method + ' is not supported.')
+        except Exception as e:
+            _logger.error(MODULE_NAME + 'ECSDataCollection::run()::The following unexpected '
+                                        'exception occured: ' + str(e) + "\n" + traceback.format_exc())
 
 
 def ecs_config(config, vdc_config):
@@ -95,380 +99,395 @@ def ecs_config(config, vdc_config):
     global _logger
     global _ecsAuthentication
     global _ecsVDCLookup
+    try:
+        # Load and validate module configuration
+        _configuration = ECSPulseConfiguration(config)
 
-    # Load and validate module configuration
-    _configuration = ECSPulseConfiguration(config)
+        # Load ECS VDC Lookup
+        _ecsVDCLookup = ECSUtility(_ecsAuthentication, _logger, vdc_config)
 
-    # Load ECS VDC Lookup
-    _ecsVDCLookup = ECSUtility(_ecsAuthentication, _logger, vdc_config)
-
-    # Grab loggers and log status
-    _logger = ecs_logger.get_logger(__name__, _configuration.logging_level)
-    _logger.info(MODULE_NAME + '::ecs_config()::We have configured logging level to: '
-                 + logging.getLevelName(str(_configuration.logging_level)))
-    _logger.info(MODULE_NAME + '::ecs_config()::Configuring ECS Data Collection Module complete.')
+        # Grab loggers and log status
+        _logger = ecs_logger.get_logger(__name__, _configuration.logging_level)
+        _logger.info(MODULE_NAME + '::ecs_config()::We have configured logging level to: '
+                     + logging.getLevelName(str(_configuration.logging_level)))
+        _logger.info(MODULE_NAME + '::ecs_config()::Configuring ECS Data Collection Module complete.')
+    except Exception as e:
+        _logger.error(MODULE_NAME + '::ecs_config()::The following unexpected '
+                                    'exception occured: ' + str(e) + "\n" + traceback.format_exc())
 
 
 def ecs_collect_capacity_data(influxclient, logger, ecsmanagmentapi, pollinginterval):
 
-    # Start polling loop
-    while True:
-        # Perform API call against each configured ECS
-        for ecsconnection in ecsmanagmentapi:
-            # Retrieve capacity data via API
-            capacity_data = ecsconnection.get_capacity_data()
+    try:
+        # Start polling loop
+        while True:
+            # Perform API call against each configured ECS
+            for ecsconnection in ecsmanagmentapi:
+                # Retrieve capacity data via API
+                capacity_data = ecsconnection.get_capacity_data()
 
-            if capacity_data is None:
-                logger.info(MODULE_NAME + '::ecs_collect_capacity_data()::Unable to retrieve ECS Dashboard Capacity Information')
-                return
-            else:
-                """
-                We have the raw JSON data now lets prep it for Influx
-                """
+                if capacity_data is None:
+                    logger.info(MODULE_NAME + '::ecs_collect_capacity_data()::Unable to retrieve ECS Dashboard Capacity Information')
+                    return
+                else:
+                    """
+                    We have the raw JSON data now lets prep it for Influx
+                    """
 
-                # Declare locals
-                current_time = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S")
-                current_epoch_time = time.time()
-                db_array = []
-                ecsdata = {}
-                ecsdata_metrics = {}
-                ecsdata_summary = {}
-                fields = {}
-                tags = {}
-                target_name = "Capacity"
-
-                # Grab VDC Name
-                tags['VDC'] = _ecsVDCLookup.vdc_json[ecsconnection.authentication.host]
-
-                # Process remaining data in JSON
-                for field in capacity_data:
-                    # Process individual data field
-                    if type(capacity_data[field]) is int:
-                        try:
-                            logger.debug(MODULE_NAME + '::ecs_collect_capacity_data()::field from capacity_data being processed is: ' + field)
-                            ecsdata[field] = float(capacity_data[field])
-                        except Exception:
-                            try:
-                                # We're here because trying to convert to a float failed.  Store whatever value is there
-                                ecsdata[field] = capacity_data[field].encode("utf-8")
-                            except Exception:
-                                pass
-                    # Process list fields
-                    elif type(capacity_data[field]) is list:
-                        logger.debug(MODULE_NAME + '::ecs_collect_data()::field from capacity_data being processed is: ' + field)
-                        ecsconnection.get_ecs_detail_data(field=field, metric_list=capacity_data[field], metric_values=ecsdata_metrics)
-                    else:
-                        # Process dictionary fields
-                        logger.debug(MODULE_NAME + '::ecs_collect_data()::field from capacity_data being processed is: ' + field)
-                        ecsconnection.get_ecs_summary_data(field=field, summary_dict=capacity_data[field],
-                                                         current_epoch=current_epoch_time, summary_values=ecsdata_summary)
-
-                # Create Influx DB Info Dictionary for our string fields and add it to the db list
-                db_json = {
-                    "measurement": target_name,
-                    "tags": tags,
-                    "fields": ecsdata,
-                    "time": current_time
-                }
-                db_array.append(db_json.copy())
-
-                #  Create Influx DB Info Dictionary for our list fields and add it to the db list
-                for times in ecsdata_metrics:
-                    influxdb_time = datetime.datetime.utcfromtimestamp(int(times))
-                    influxdb_time = influxdb_time.strftime("%Y-%m-%dT%H:%M:%S")
-
-                    db_json = {
-                        "measurement": target_name+"Metrics",
-                        "tags": tags,
-                        "fields": ecsdata_metrics[times],
-                        "time": influxdb_time
-                    }
-                    db_array.append(db_json.copy())
-
-                #  Create Influx DB Info Dictionary for our dictionary fields and add it to the db list
-                for times in ecsdata_summary:
-                    influxdb_time = datetime.datetime.utcfromtimestamp(int(times))
-                    influxdb_time = influxdb_time.strftime("%Y-%m-%dT%H:%M:%S")
-
-                    db_json = {
-                        "measurement": target_name+"Summary",
-                        "tags": tags,
-                        "fields": ecsdata_summary[times],
-                        "time": influxdb_time
-                    }
-                    db_array.append(db_json.copy())
-
-                # Write data to Influx
-                influxclient.write_points(db_array)
-
-                # Dump array for debug
-                logger.debug(MODULE_NAME + '::ecs_collect_capacity_data()::'
-                                           'Capacity db_array is: \r\n\r\n'.join(str(db_array)))
-
-        if controlledShutdown.kill_now:
-            print(MODULE_NAME + "ecs_collect_capacity_data()::Shutdown detected.  Terminating polling.")
-            break
-
-        # Wait for specific polling interval
-        time.sleep(float(pollinginterval))
-
-
-def ecs_collect_local_zone_data(influxclient, logger, ecsmanagmentapi, pollinginterval):
-
-    # Start polling loop
-    while True:
-
-        # Perform API call against each configured ECS
-        for ecsconnection in ecsmanagmentapi:
-
-            # Retrieve local zone data via API
-            local_zone_data = ecsconnection.get_local_zone_data()
-
-            if local_zone_data is None:
-                logger.error(MODULE_NAME + '::ecs_collect_local_zone_data()::'
-                                           'Unable to retrieve ECS Dashboard Local Zone Information')
-                return
-            else:
-                """
-                We have the raw JSON data now lets prep it for Influx
-                """
-
-                # Declare locals
-                current_time = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S")
-                current_epoch_time = time.time()
-                db_array = []
-                ecsdata = {}
-                ecsdata_metrics = {}
-                ecsdata_summary = {}
-                fields = {}
-                tags = {}
-                target_name = "LocalZone"
-
-                # Remove data points from raw json we are not interested in
-                local_zone_data.pop('_links', None)
-                local_zone_data.pop('transactionErrors', None)
-                local_zone_data.pop('transactionErrorsSummary', None)
-                local_zone_data.pop('transactionErrorsCurrent', None)
-
-                # Grab VDC Name
-                tags['VDC'] = _ecsVDCLookup.vdc_json[ecsconnection.authentication.host]
-
-                # Process remaining data in JSON
-                for field in local_zone_data:
-                    # Process individual data field
-                    if type(local_zone_data[field]) is unicode:
-                        try:
-                            logger.debug(MODULE_NAME + '::ecs_collect_local_zone_data()::'
-                                                       'field from local_zone_data being processed is: ' + field)
-                            ecsdata[field] = float(local_zone_data[field])
-                        except Exception:
-                            try:
-                                # We're here because trying to convert to a float failed.
-                                # Convert unicode value to string and store whatever value is there
-                                ecsdata[field] = local_zone_data[field].encode("utf-8")
-                            except Exception:
-                                pass
-                    # Process list fields
-                    elif type(local_zone_data[field]) is list:
-                        logger.debug(MODULE_NAME + '::ecs_collect_local_zone_data()::'
-                                                   'field from local_zone_data being processed is: ' + field)
-                        ecsconnection.get_ecs_detail_data(field=field, metric_list=local_zone_data[field], metric_values=ecsdata_metrics)
-                    else:
-                        # Process dictionary fields
-                        logger.debug(MODULE_NAME + '::ecs_collect_local_zone_data()::'
-                                                   'field from local_zone_data being processed is: ' + field)
-                        ecsconnection.get_ecs_summary_data(field=field, summary_dict=local_zone_data[field],
-                                                         current_epoch=current_epoch_time, summary_values=ecsdata_summary)
-
-                # Create Influx DB Info Dictionary for our string fields and add it to the db list
-                db_json = {
-                    "measurement": target_name,
-                    "tags": tags,
-                    "fields": ecsdata,
-                    "time": current_time
-                }
-                db_array.append(db_json.copy())
-
-                #  Create Influx DB Info Dictionary for our list fields and add it to the db list
-                for times in ecsdata_metrics:
-                    influxdb_time = datetime.datetime.utcfromtimestamp(int(times))
-                    influxdb_time = influxdb_time.strftime("%Y-%m-%dT%H:%M:%S")
-
-                    db_json = {
-                        "measurement": target_name+"Metrics",
-                        "tags": tags,
-                        "fields": ecsdata_metrics[times],
-                        "time": influxdb_time
-                    }
-                    db_array.append(db_json.copy())
-
-                #  Create Influx DB Info Dictionary for our dictionary fields and add it to the db list
-                for times in ecsdata_summary:
-                    influxdb_time = datetime.datetime.utcfromtimestamp(int(times))
-                    influxdb_time = influxdb_time.strftime("%Y-%m-%dT%H:%M:%S")
-
-                    db_json = {
-                        "measurement": target_name+"Summary",
-                        "tags": tags,
-                        "fields": ecsdata_summary[times],
-                        "time": influxdb_time
-                    }
-                    db_array.append(db_json.copy())
-
-                # Write data to Influx
-                influxclient.write_points(db_array)
-
-                # Dump array for debug
-                logger.debug(MODULE_NAME + '::ecs_collect_local_zone_data()::'
-                                           'Local Zone db_array is: \r\n\r\n'.join(str(db_array)))
-
-        if controlledShutdown.kill_now:
-            print(MODULE_NAME + "ecs_collect_local_zone_data()::"
-                                "Shutdown detected.  Terminating polling.")
-            break
-
-        # Wait for specific polling interval
-        time.sleep(float(pollinginterval))
-
-
-def ecs_collect_local_zone_node_data(influxclient, logger, ecsmanagmentapi, pollinginterval):
-
-    # Start polling loop
-    while True:
-
-        # Perform API call against each configured ECS
-        for ecsconnection in ecsmanagmentapi:
-
-            # Retrieve local zone node data via API
-            local_zone_node_data = ecsconnection.get_local_zone_node_data()
-
-            if local_zone_node_data is None:
-                logger.error(MODULE_NAME + '::ecs_collect_local_zone_node_data()::'
-                                           'Unable to retrieve ECS Dashboard Local Zone Node Information')
-                return
-            else:
-                """
-                We have the raw JSON data now lets prep it for Influx
-                """
-
-                # Declare locals
-                current_time = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S")
-                current_epoch_time = time.time()
-                db_array = []
-                ecsdata = {}
-                ecsdata_metrics = {}
-                ecsdata_summary = {}
-                fields = {}
-                tags = {}
-                target_name = "LocalZoneNodes"
-
-                tags['VDC'] = _ecsVDCLookup.vdc_json[ecsconnection.authentication.host]
-
-                # Grab just node information
-                zone_node_data = local_zone_node_data['_embedded']['_instances']
-
-                # Using 'local_zone_node_data' so we can re-use code without changing references
-                for local_zone_node_data in zone_node_data:
-
-                    # Not handling a few metrics for now
-                    local_zone_node_data.pop('_links', None)
-                    local_zone_node_data.pop('transactionErrors', None)
-                    local_zone_node_data.pop('transactionErrorsSummary', None)
-                    local_zone_node_data.pop('transactionErrorsCurrent', None)
-
-                    node_display_name = local_zone_node_data['displayName']
-                    ecsdata[node_display_name] = {}
-                    ecsdata_metrics[node_display_name] = {}
-                    ecsdata_summary[node_display_name] = {}
-
-                    for field in local_zone_node_data:
-                        if type(local_zone_node_data[field]) is unicode:
-                            try:
-                                logger.debug(MODULE_NAME + '::ecs_collect_local_zone_node_data()::field from '
-                                                           'local_zone_node_data being processed is: ' + field)
-                                ecsdata[node_display_name][field] = float(local_zone_node_data[field])
-                            except Exception as ex1:
-                                try:
-                                    # We're here because trying to convert to a float failed.
-                                    ecsdata[node_display_name][field] = local_zone_node_data[field].encode("utf-8")
-                                except Exception as ex2:
-                                    pass
-
-                        elif type(local_zone_node_data[field]) is list:
-                            logger.debug(MODULE_NAME + '::ecs_collect_local_zone_node_data()::field from '
-                                                       'local_zone_node_data being processed is: ' + field)
-
-                            ecsconnection.get_ecs_detail_data(field=field, metric_list=local_zone_node_data[field],
-                                                            metric_values=ecsdata_metrics[node_display_name])
-
-                        else:
-                            logger.debug(MODULE_NAME + '::ecs_collect_local_zone_node_data()::field from '
-                                                       'local_zone_node_data being processed is: ' + field)
-
-                            ecsconnection.get_ecs_summary_data(field=field, summary_dict=local_zone_node_data[field],
-                                                             current_epoch=current_epoch_time, summary_values=ecsdata_summary[node_display_name])
-
-                for node_display_name in ecsdata:
+                    # Declare locals
+                    current_time = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S")
+                    current_epoch_time = time.time()
                     db_array = []
-                    tags['NodeID'] = node_display_name
+                    ecsdata = {}
+                    ecsdata_metrics = {}
+                    ecsdata_summary = {}
+                    fields = {}
+                    tags = {}
+                    target_name = "Capacity"
+
+                    # Grab VDC Name
+                    tags['VDC'] = _ecsVDCLookup.vdc_json[ecsconnection.authentication.host]
+
+                    # Process remaining data in JSON
+                    for field in capacity_data:
+                        # Process individual data field
+                        if type(capacity_data[field]) is int:
+                            try:
+                                logger.debug(MODULE_NAME + '::ecs_collect_capacity_data()::field from capacity_data being processed is: ' + field)
+                                ecsdata[field] = float(capacity_data[field])
+                            except Exception:
+                                try:
+                                    # We're here because trying to convert to a float failed.  Store whatever value is there
+                                    ecsdata[field] = capacity_data[field].encode("utf-8")
+                                except Exception:
+                                    pass
+                        # Process list fields
+                        elif type(capacity_data[field]) is list:
+                            logger.debug(MODULE_NAME + '::ecs_collect_data()::field from capacity_data being processed is: ' + field)
+                            ecsconnection.get_ecs_detail_data(field=field, metric_list=capacity_data[field], metric_values=ecsdata_metrics)
+                        else:
+                            # Process dictionary fields
+                            logger.debug(MODULE_NAME + '::ecs_collect_data()::field from capacity_data being processed is: ' + field)
+                            ecsconnection.get_ecs_summary_data(field=field, summary_dict=capacity_data[field],
+                                                             current_epoch=current_epoch_time, summary_values=ecsdata_summary)
+
+                    # Create Influx DB Info Dictionary for our string fields and add it to the db list
                     db_json = {
                         "measurement": target_name,
                         "tags": tags,
-                        "fields": ecsdata[node_display_name],
+                        "fields": ecsdata,
                         "time": current_time
                     }
                     db_array.append(db_json.copy())
-                    influxclient.write_points(db_array)
-                    logger.debug(MODULE_NAME + '::ecs_collect_local_zone_node_data()::'
-                                               'Local Zone Node data db_array is: \r\n\r\n'.join(str(db_array)))
 
-                for node_display_name in ecsdata_metrics:
-                    db_array = []
-                    tags['NodeID'] = node_display_name
-
-                    for times in ecsdata_metrics[node_display_name]:
-
+                    #  Create Influx DB Info Dictionary for our list fields and add it to the db list
+                    for times in ecsdata_metrics:
                         influxdb_time = datetime.datetime.utcfromtimestamp(int(times))
                         influxdb_time = influxdb_time.strftime("%Y-%m-%dT%H:%M:%S")
 
                         db_json = {
                             "measurement": target_name+"Metrics",
                             "tags": tags,
-                            "fields": ecsdata_metrics[node_display_name][times],
+                            "fields": ecsdata_metrics[times],
                             "time": influxdb_time
                         }
                         db_array.append(db_json.copy())
 
-                    influxclient.write_points(db_array)
-                logger.debug(MODULE_NAME + '::ecs_collect_local_zone_node_data()::'
-                                           'Local Zone Node metrics db_array is: \r\n\r\n'.join(str(db_array)))
-
-                for node_display_name in ecsdata_summary:
-                    db_array = []
-                    tags['NodeID'] = node_display_name
-
-                    for times in ecsdata_summary[node_display_name]:
+                    #  Create Influx DB Info Dictionary for our dictionary fields and add it to the db list
+                    for times in ecsdata_summary:
                         influxdb_time = datetime.datetime.utcfromtimestamp(int(times))
                         influxdb_time = influxdb_time.strftime("%Y-%m-%dT%H:%M:%S")
 
                         db_json = {
                             "measurement": target_name+"Summary",
                             "tags": tags,
-                            "fields": ecsdata_summary[node_display_name][times],
+                            "fields": ecsdata_summary[times],
                             "time": influxdb_time
                         }
                         db_array.append(db_json.copy())
 
+                    # Write data to Influx
                     influxclient.write_points(db_array)
+
+                    # Dump array for debug
+                    logger.debug(MODULE_NAME + '::ecs_collect_capacity_data()::'
+                                               'Capacity db_array is: \r\n\r\n'.join(str(db_array)))
+
+            if controlledShutdown.kill_now:
+                print(MODULE_NAME + "ecs_collect_capacity_data()::Shutdown detected.  Terminating polling.")
+                break
+
+            # Wait for specific polling interval
+            time.sleep(float(pollinginterval))
+    except Exception as e:
+        _logger.error(MODULE_NAME + '::ecs_collect_capacity_data()::The following unexpected '
+                                    'exception occured: ' + str(e) + "\n" + traceback.format_exc())
+
+
+def ecs_collect_local_zone_data(influxclient, logger, ecsmanagmentapi, pollinginterval):
+
+    try:
+        # Start polling loop
+        while True:
+
+            # Perform API call against each configured ECS
+            for ecsconnection in ecsmanagmentapi:
+
+                # Retrieve local zone data via API
+                local_zone_data = ecsconnection.get_local_zone_data()
+
+                if local_zone_data is None:
+                    logger.error(MODULE_NAME + '::ecs_collect_local_zone_data()::'
+                                               'Unable to retrieve ECS Dashboard Local Zone Information')
+                    return
+                else:
+                    """
+                    We have the raw JSON data now lets prep it for Influx
+                    """
+
+                    # Declare locals
+                    current_time = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S")
+                    current_epoch_time = time.time()
+                    db_array = []
+                    ecsdata = {}
+                    ecsdata_metrics = {}
+                    ecsdata_summary = {}
+                    fields = {}
+                    tags = {}
+                    target_name = "LocalZone"
+
+                    # Remove data points from raw json we are not interested in
+                    local_zone_data.pop('_links', None)
+                    local_zone_data.pop('transactionErrors', None)
+                    local_zone_data.pop('transactionErrorsSummary', None)
+                    local_zone_data.pop('transactionErrorsCurrent', None)
+
+                    # Grab VDC Name
+                    tags['VDC'] = _ecsVDCLookup.vdc_json[ecsconnection.authentication.host]
+
+                    # Process remaining data in JSON
+                    for field in local_zone_data:
+                        # Process individual data field
+                        if type(local_zone_data[field]) is unicode:
+                            try:
+                                logger.debug(MODULE_NAME + '::ecs_collect_local_zone_data()::'
+                                                           'field from local_zone_data being processed is: ' + field)
+                                ecsdata[field] = float(local_zone_data[field])
+                            except Exception:
+                                try:
+                                    # We're here because trying to convert to a float failed.
+                                    # Convert unicode value to string and store whatever value is there
+                                    ecsdata[field] = local_zone_data[field].encode("utf-8")
+                                except Exception:
+                                    pass
+                        # Process list fields
+                        elif type(local_zone_data[field]) is list:
+                            logger.debug(MODULE_NAME + '::ecs_collect_local_zone_data()::'
+                                                       'field from local_zone_data being processed is: ' + field)
+                            ecsconnection.get_ecs_detail_data(field=field, metric_list=local_zone_data[field], metric_values=ecsdata_metrics)
+                        else:
+                            # Process dictionary fields
+                            logger.debug(MODULE_NAME + '::ecs_collect_local_zone_data()::'
+                                                       'field from local_zone_data being processed is: ' + field)
+                            ecsconnection.get_ecs_summary_data(field=field, summary_dict=local_zone_data[field],
+                                                             current_epoch=current_epoch_time, summary_values=ecsdata_summary)
+
+                    # Create Influx DB Info Dictionary for our string fields and add it to the db list
+                    db_json = {
+                        "measurement": target_name,
+                        "tags": tags,
+                        "fields": ecsdata,
+                        "time": current_time
+                    }
+                    db_array.append(db_json.copy())
+
+                    #  Create Influx DB Info Dictionary for our list fields and add it to the db list
+                    for times in ecsdata_metrics:
+                        influxdb_time = datetime.datetime.utcfromtimestamp(int(times))
+                        influxdb_time = influxdb_time.strftime("%Y-%m-%dT%H:%M:%S")
+
+                        db_json = {
+                            "measurement": target_name+"Metrics",
+                            "tags": tags,
+                            "fields": ecsdata_metrics[times],
+                            "time": influxdb_time
+                        }
+                        db_array.append(db_json.copy())
+
+                    #  Create Influx DB Info Dictionary for our dictionary fields and add it to the db list
+                    for times in ecsdata_summary:
+                        influxdb_time = datetime.datetime.utcfromtimestamp(int(times))
+                        influxdb_time = influxdb_time.strftime("%Y-%m-%dT%H:%M:%S")
+
+                        db_json = {
+                            "measurement": target_name+"Summary",
+                            "tags": tags,
+                            "fields": ecsdata_summary[times],
+                            "time": influxdb_time
+                        }
+                        db_array.append(db_json.copy())
+
+                    # Write data to Influx
+                    influxclient.write_points(db_array)
+
+                    # Dump array for debug
+                    logger.debug(MODULE_NAME + '::ecs_collect_local_zone_data()::'
+                                               'Local Zone db_array is: \r\n\r\n'.join(str(db_array)))
+
+            if controlledShutdown.kill_now:
+                print(MODULE_NAME + "ecs_collect_local_zone_data()::"
+                                    "Shutdown detected.  Terminating polling.")
+                break
+
+            # Wait for specific polling interval
+            time.sleep(float(pollinginterval))
+    except Exception as e:
+        _logger.error(MODULE_NAME + '::ecs_collect_local_zone_data()::The following unexpected '
+                                    'exception occured: ' + str(e) + "\n" + traceback.format_exc())
+
+
+def ecs_collect_local_zone_node_data(influxclient, logger, ecsmanagmentapi, pollinginterval):
+
+    try:
+        # Start polling loop
+        while True:
+
+            # Perform API call against each configured ECS
+            for ecsconnection in ecsmanagmentapi:
+
+                # Retrieve local zone node data via API
+                local_zone_node_data = ecsconnection.get_local_zone_node_data()
+
+                if local_zone_node_data is None:
+                    logger.error(MODULE_NAME + '::ecs_collect_local_zone_node_data()::'
+                                               'Unable to retrieve ECS Dashboard Local Zone Node Information')
+                    return
+                else:
+                    """
+                    We have the raw JSON data now lets prep it for Influx
+                    """
+
+                    # Declare locals
+                    current_time = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S")
+                    current_epoch_time = time.time()
+                    db_array = []
+                    ecsdata = {}
+                    ecsdata_metrics = {}
+                    ecsdata_summary = {}
+                    fields = {}
+                    tags = {}
+                    target_name = "LocalZoneNodes"
+
+                    tags['VDC'] = _ecsVDCLookup.vdc_json[ecsconnection.authentication.host]
+
+                    # Grab just node information
+                    zone_node_data = local_zone_node_data['_embedded']['_instances']
+
+                    # Using 'local_zone_node_data' so we can re-use code without changing references
+                    for local_zone_node_data in zone_node_data:
+
+                        # Not handling a few metrics for now
+                        local_zone_node_data.pop('_links', None)
+                        local_zone_node_data.pop('transactionErrors', None)
+                        local_zone_node_data.pop('transactionErrorsSummary', None)
+                        local_zone_node_data.pop('transactionErrorsCurrent', None)
+
+                        node_display_name = local_zone_node_data['displayName']
+                        ecsdata[node_display_name] = {}
+                        ecsdata_metrics[node_display_name] = {}
+                        ecsdata_summary[node_display_name] = {}
+
+                        for field in local_zone_node_data:
+                            if type(local_zone_node_data[field]) is unicode:
+                                try:
+                                    logger.debug(MODULE_NAME + '::ecs_collect_local_zone_node_data()::field from '
+                                                               'local_zone_node_data being processed is: ' + field)
+                                    ecsdata[node_display_name][field] = float(local_zone_node_data[field])
+                                except Exception as ex1:
+                                    try:
+                                        # We're here because trying to convert to a float failed.
+                                        ecsdata[node_display_name][field] = local_zone_node_data[field].encode("utf-8")
+                                    except Exception as ex2:
+                                        pass
+
+                            elif type(local_zone_node_data[field]) is list:
+                                logger.debug(MODULE_NAME + '::ecs_collect_local_zone_node_data()::field from '
+                                                           'local_zone_node_data being processed is: ' + field)
+
+                                ecsconnection.get_ecs_detail_data(field=field, metric_list=local_zone_node_data[field],
+                                                                metric_values=ecsdata_metrics[node_display_name])
+
+                            else:
+                                logger.debug(MODULE_NAME + '::ecs_collect_local_zone_node_data()::field from '
+                                                           'local_zone_node_data being processed is: ' + field)
+
+                                ecsconnection.get_ecs_summary_data(field=field, summary_dict=local_zone_node_data[field],
+                                                                 current_epoch=current_epoch_time, summary_values=ecsdata_summary[node_display_name])
+
+                    for node_display_name in ecsdata:
+                        db_array = []
+                        tags['NodeID'] = node_display_name
+                        db_json = {
+                            "measurement": target_name,
+                            "tags": tags,
+                            "fields": ecsdata[node_display_name],
+                            "time": current_time
+                        }
+                        db_array.append(db_json.copy())
+                        influxclient.write_points(db_array)
+                        logger.debug(MODULE_NAME + '::ecs_collect_local_zone_node_data()::'
+                                                   'Local Zone Node data db_array is: \r\n\r\n'.join(str(db_array)))
+
+                    for node_display_name in ecsdata_metrics:
+                        db_array = []
+                        tags['NodeID'] = node_display_name
+
+                        for times in ecsdata_metrics[node_display_name]:
+
+                            influxdb_time = datetime.datetime.utcfromtimestamp(int(times))
+                            influxdb_time = influxdb_time.strftime("%Y-%m-%dT%H:%M:%S")
+
+                            db_json = {
+                                "measurement": target_name+"Metrics",
+                                "tags": tags,
+                                "fields": ecsdata_metrics[node_display_name][times],
+                                "time": influxdb_time
+                            }
+                            db_array.append(db_json.copy())
+
+                        influxclient.write_points(db_array)
                     logger.debug(MODULE_NAME + '::ecs_collect_local_zone_node_data()::'
-                                               'Local Zone Node summary db_array is: \r\n\r\n'.join(str(db_array)))
+                                               'Local Zone Node metrics db_array is: \r\n\r\n'.join(str(db_array)))
 
-        if controlledShutdown.kill_now:
-            print(MODULE_NAME + "ecs_collect_local_zone_node_data()::Shutdown detected.  Terminating polling.")
-            break
+                    for node_display_name in ecsdata_summary:
+                        db_array = []
+                        tags['NodeID'] = node_display_name
 
-        # Wait for specific polling interval
-        time.sleep(float(pollinginterval))
+                        for times in ecsdata_summary[node_display_name]:
+                            influxdb_time = datetime.datetime.utcfromtimestamp(int(times))
+                            influxdb_time = influxdb_time.strftime("%Y-%m-%dT%H:%M:%S")
+
+                            db_json = {
+                                "measurement": target_name+"Summary",
+                                "tags": tags,
+                                "fields": ecsdata_summary[node_display_name][times],
+                                "time": influxdb_time
+                            }
+                            db_array.append(db_json.copy())
+
+                        influxclient.write_points(db_array)
+                        logger.debug(MODULE_NAME + '::ecs_collect_local_zone_node_data()::'
+                                                   'Local Zone Node summary db_array is: \r\n\r\n'.join(str(db_array)))
+
+            if controlledShutdown.kill_now:
+                print(MODULE_NAME + "ecs_collect_local_zone_node_data()::Shutdown detected.  Terminating polling.")
+                break
+
+            # Wait for specific polling interval
+            time.sleep(float(pollinginterval))
+    except Exception as e:
+        _logger.error(MODULE_NAME + '::ecs_collect_local_zone_node_data()::The following unexpected '
+                                    'exception occured: ' + str(e) + "\n" + traceback.format_exc())
 
 
 def ecs_collect_local_zone_disk_data(influxclient, logger, ecsmanagmentapi, pollinginterval):
@@ -741,275 +760,283 @@ def ecs_collect_local_zone_replication_data(influxclient, logger, ecsmanagmentap
 
 def ecs_collect_local_zone_replication_failure_data(influxclient, logger, ecsmanagmentapi, pollinginterval):
 
-    while True:
+    try:
+        while True:
 
-        # Perform API call against each configured ECS
-        for ecsconnection in ecsmanagmentapi:
+            # Perform API call against each configured ECS
+            for ecsconnection in ecsmanagmentapi:
 
-            # Retrieve local zone failed replication data via API
-            local_zone_failed_failed_replication_link_data = ecsconnection.get_local_zone_replication_failure_data()
+                # Retrieve local zone failed replication data via API
+                local_zone_failed_failed_replication_link_data = ecsconnection.get_local_zone_replication_failure_data()
 
-            if local_zone_failed_failed_replication_link_data is None:
-                logger.error(MODULE_NAME + '::ecs_collect_local_zone_replication_failure_data()::'
-                                           'Unable to retrieve ECS Dashboard Local Replication Group Link Failure Information')
-                return
-            else:
-                """
-                We have the raw JSON data now lets prep it for Influx
-                """
+                if local_zone_failed_failed_replication_link_data is None:
+                    logger.error(MODULE_NAME + '::ecs_collect_local_zone_replication_failure_data()::'
+                                               'Unable to retrieve ECS Dashboard Local Replication Group Link Failure Information')
+                    return
+                else:
+                    """
+                    We have the raw JSON data now lets prep it for Influx
+                    """
 
-                # Declare locals
-                current_time = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S")
-                current_epoch_time = time.time()
-                db_array = []
-                ecsdata = {}
-                ecsdata_metrics = {}
-                ecsdata_summary = {}
-                fields = {}
-                tags = {}
-                target_name = "LocalZoneReplicationFailure"
+                    # Declare locals
+                    current_time = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S")
+                    current_epoch_time = time.time()
+                    db_array = []
+                    ecsdata = {}
+                    ecsdata_metrics = {}
+                    ecsdata_summary = {}
+                    fields = {}
+                    tags = {}
+                    target_name = "LocalZoneReplicationFailure"
 
-                tags['VDC'] = _ecsVDCLookup.vdc_json[ecsconnection.authentication.host]
+                    tags['VDC'] = _ecsVDCLookup.vdc_json[ecsconnection.authentication.host]
 
-                # Grab just node information
-                failed_replication_link_data = local_zone_failed_failed_replication_link_data['_embedded']['_instances']
+                    # Grab just node information
+                    failed_replication_link_data = local_zone_failed_failed_replication_link_data['_embedded']['_instances']
 
-                # Using 'local_zone_failed_failed_replication_link_data'
-                # so we can re-use code without changing references
-                for local_zone_failed_failed_replication_link_data in failed_replication_link_data:
+                    # Using 'local_zone_failed_failed_replication_link_data'
+                    # so we can re-use code without changing references
+                    for local_zone_failed_failed_replication_link_data in failed_replication_link_data:
 
-                    # Not handling a few metrics for now
-                    local_zone_failed_failed_replication_link_data.pop('_links', None)
+                        # Not handling a few metrics for now
+                        local_zone_failed_failed_replication_link_data.pop('_links', None)
 
-                    failed_rg_name = local_zone_failed_failed_replication_link_data['rgName']
-                    ecsdata[failed_rg_name] = {}
-                    ecsdata_metrics[failed_rg_name] = {}
-                    ecsdata_summary[failed_rg_name] = {}
+                        failed_rg_name = local_zone_failed_failed_replication_link_data['rgName']
+                        ecsdata[failed_rg_name] = {}
+                        ecsdata_metrics[failed_rg_name] = {}
+                        ecsdata_summary[failed_rg_name] = {}
 
-                    for field in local_zone_failed_failed_replication_link_data:
-                        if type(local_zone_failed_failed_replication_link_data[field]) is unicode:
-                            try:
+                        for field in local_zone_failed_failed_replication_link_data:
+                            if type(local_zone_failed_failed_replication_link_data[field]) is unicode:
+                                try:
+                                    logger.debug(MODULE_NAME + '::ecs_collect_local_zone_replication_failure_data()::field from '
+                                                                'local_zone_failed_failed_replication_link_data being processed is: ' + field)
+                                    ecsdata[failed_rg_name][field] = float(local_zone_failed_failed_replication_link_data[field])
+                                except Exception as ex1:
+                                    try:
+                                        # We're here because trying to convert to a float failed.
+                                        ecsdata[failed_rg_name][field] = local_zone_failed_failed_replication_link_data[field].encode("utf-8")
+                                    except Exception as ex2:
+                                        pass
+
+                            elif type(local_zone_failed_failed_replication_link_data[field]) is list:
                                 logger.debug(MODULE_NAME + '::ecs_collect_local_zone_replication_failure_data()::field from '
                                                             'local_zone_failed_failed_replication_link_data being processed is: ' + field)
-                                ecsdata[failed_rg_name][field] = float(local_zone_failed_failed_replication_link_data[field])
-                            except Exception as ex1:
-                                try:
-                                    # We're here because trying to convert to a float failed.
-                                    ecsdata[failed_rg_name][field] = local_zone_failed_failed_replication_link_data[field].encode("utf-8")
-                                except Exception as ex2:
-                                    pass
+                                ecsconnection.get_ecs_detail_data(field=field, metric_list=local_zone_failed_failed_replication_link_data[field],
+                                                                metric_values=ecsdata_metrics[failed_rg_name])
 
-                        elif type(local_zone_failed_failed_replication_link_data[field]) is list:
-                            logger.debug(MODULE_NAME + '::ecs_collect_local_zone_replication_failure_data()::field from '
-                                                        'local_zone_failed_failed_replication_link_data being processed is: ' + field)
-                            ecsconnection.get_ecs_detail_data(field=field, metric_list=local_zone_failed_failed_replication_link_data[field],
-                                                            metric_values=ecsdata_metrics[failed_rg_name])
+                            else:
+                                logger.debug(MODULE_NAME + '::ecs_collect_local_zone_replication_failure_data()::field from '
+                                                            'local_zone_failed_failed_replication_link_data being processed is: ' + field)
+                                ecsconnection.get_ecs_summary_data(field=field, summary_dict=local_zone_failed_failed_replication_link_data[field],
+                                                                 current_epoch=current_epoch_time, summary_values=ecsdata_summary[failed_rg_name])
 
-                        else:
-                            logger.debug(MODULE_NAME + '::ecs_collect_local_zone_replication_failure_data()::field from '
-                                                        'local_zone_failed_failed_replication_link_data being processed is: ' + field)
-                            ecsconnection.get_ecs_summary_data(field=field, summary_dict=local_zone_failed_failed_replication_link_data[field],
-                                                             current_epoch=current_epoch_time, summary_values=ecsdata_summary[failed_rg_name])
-
-                for failed_rg_name in ecsdata:
-                    db_array = []
-                    tags['ReplicationGroupID'] = failed_rg_name
-                    db_json = {
-                        "measurement": target_name,
-                        "tags": tags,
-                        "fields": ecsdata[failed_rg_name],
-                        "time": current_time
-                    }
-                    db_array.append(db_json.copy())
-                    influxclient.write_points(db_array)
-                    logger.debug(MODULE_NAME + '::ecs_collect_local_zone_replication_failure_data()::'
-                                                'Local Zone Failed Replication data db_array is: \r\n\r\n'.join(str(db_array)))
-
-                for failed_rg_name in ecsdata_metrics:
-                    db_array = []
-                    tags['ReplicationGroupID'] = failed_rg_name
-
-                    for times in ecsdata_metrics[failed_rg_name]:
-
-                        influxdb_time = datetime.datetime.utcfromtimestamp(int(times))
-                        influxdb_time = influxdb_time.strftime("%Y-%m-%dT%H:%M:%S")
-
+                    for failed_rg_name in ecsdata:
+                        db_array = []
+                        tags['ReplicationGroupID'] = failed_rg_name
                         db_json = {
-                            "measurement": target_name+"Metrics",
+                            "measurement": target_name,
                             "tags": tags,
-                            "fields": ecsdata_metrics[failed_rg_name][times],
-                            "time": influxdb_time
+                            "fields": ecsdata[failed_rg_name],
+                            "time": current_time
                         }
                         db_array.append(db_json.copy())
+                        influxclient.write_points(db_array)
+                        logger.debug(MODULE_NAME + '::ecs_collect_local_zone_replication_failure_data()::'
+                                                    'Local Zone Failed Replication data db_array is: \r\n\r\n'.join(str(db_array)))
 
-                    influxclient.write_points(db_array)
-                    logger.debug(MODULE_NAME + '::ecs_collect_local_zone_replication_failure_data()::'
-                                                'Local Zone Failed Replication metrics db_array is: \r\n\r\n'.join(str(db_array)))
+                    for failed_rg_name in ecsdata_metrics:
+                        db_array = []
+                        tags['ReplicationGroupID'] = failed_rg_name
 
-                for failed_rg_name in ecsdata_summary:
-                    db_array = []
-                    tags['ReplicationGroupID'] = failed_rg_name
+                        for times in ecsdata_metrics[failed_rg_name]:
 
-                    for times in ecsdata_summary[failed_rg_name]:
-                        influxdb_time = datetime.datetime.utcfromtimestamp(int(times))
-                        influxdb_time = influxdb_time.strftime("%Y-%m-%dT%H:%M:%S")
+                            influxdb_time = datetime.datetime.utcfromtimestamp(int(times))
+                            influxdb_time = influxdb_time.strftime("%Y-%m-%dT%H:%M:%S")
 
-                        db_json = {
-                            "measurement": target_name+"Summary",
-                            "tags": tags,
-                            "fields": ecsdata_summary[failed_rg_name][times],
-                            "time": influxdb_time
-                        }
-                        db_array.append(db_json.copy())
+                            db_json = {
+                                "measurement": target_name+"Metrics",
+                                "tags": tags,
+                                "fields": ecsdata_metrics[failed_rg_name][times],
+                                "time": influxdb_time
+                            }
+                            db_array.append(db_json.copy())
 
-                    influxclient.write_points(db_array)
-                    logger.debug(MODULE_NAME + '::ecs_collect_local_zone_replication_failure_data()::'
-                                               'Local Zone Failed Replication summary '
-                                               'db_array is: \r\n\r\n'.join(str(db_array)))
+                        influxclient.write_points(db_array)
+                        logger.debug(MODULE_NAME + '::ecs_collect_local_zone_replication_failure_data()::'
+                                                    'Local Zone Failed Replication metrics db_array is: \r\n\r\n'.join(str(db_array)))
 
-        if controlledShutdown.kill_now:
-            print(MODULE_NAME + "ecs_collect_local_zone_replication_failure_data()::"
-                                "Shutdown detected.  Terminating polling.")
-            break
+                    for failed_rg_name in ecsdata_summary:
+                        db_array = []
+                        tags['ReplicationGroupID'] = failed_rg_name
 
-        # Wait for specific polling interval
-        time.sleep(float(pollinginterval))
+                        for times in ecsdata_summary[failed_rg_name]:
+                            influxdb_time = datetime.datetime.utcfromtimestamp(int(times))
+                            influxdb_time = influxdb_time.strftime("%Y-%m-%dT%H:%M:%S")
+
+                            db_json = {
+                                "measurement": target_name+"Summary",
+                                "tags": tags,
+                                "fields": ecsdata_summary[failed_rg_name][times],
+                                "time": influxdb_time
+                            }
+                            db_array.append(db_json.copy())
+
+                        influxclient.write_points(db_array)
+                        logger.debug(MODULE_NAME + '::ecs_collect_local_zone_replication_failure_data()::'
+                                                   'Local Zone Failed Replication summary '
+                                                   'db_array is: \r\n\r\n'.join(str(db_array)))
+
+            if controlledShutdown.kill_now:
+                print(MODULE_NAME + "ecs_collect_local_zone_replication_failure_data()::"
+                                    "Shutdown detected.  Terminating polling.")
+                break
+
+            # Wait for specific polling interval
+            time.sleep(float(pollinginterval))
+    except Exception as e:
+        _logger.error(MODULE_NAME + '::ecs_collect_local_zone_replication_failure_data()::The following unexpected '
+                                    'exception occured: ' + str(e) + "\n" + traceback.format_exc())
 
 
 def ecs_collect_local_zone_bootstrap_data(influxclient, logger, ecsmanagmentapi, pollinginterval):
 
-    while True:
+    try:
+        while True:
 
-        # Perform API call against each configured ECS
-        for ecsconnection in ecsmanagmentapi:
+            # Perform API call against each configured ECS
+            for ecsconnection in ecsmanagmentapi:
 
-            # Retrieve local zone bootstrap data via API
-            local_zone_bootstrap_data = ecsconnection.get_local_zone_bootstrap_data()
+                # Retrieve local zone bootstrap data via API
+                local_zone_bootstrap_data = ecsconnection.get_local_zone_bootstrap_data()
 
-            if local_zone_bootstrap_data is None:
-                logger.error(MODULE_NAME + '::ecs_collect_local_zone_bootstrap_data()::'
-                                           'Unable to retrieve ECS Dashboard Local Replication '
-                                           'Group Link Bootstrap Information')
-                return
-            else:
-                """
-                We have the raw JSON data now lets prep it for Influx
-                """
+                if local_zone_bootstrap_data is None:
+                    logger.error(MODULE_NAME + '::ecs_collect_local_zone_bootstrap_data()::'
+                                               'Unable to retrieve ECS Dashboard Local Replication '
+                                               'Group Link Bootstrap Information')
+                    return
+                else:
+                    """
+                    We have the raw JSON data now lets prep it for Influx
+                    """
 
-                # Declare locals
-                current_time = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S")
-                current_epoch_time = time.time()
-                db_array = []
-                ecsdata = {}
-                ecsdata_metrics = {}
-                ecsdata_summary = {}
-                fields = {}
-                tags = {}
-                target_name = "LocalZoneReplicationBootstrap"
+                    # Declare locals
+                    current_time = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S")
+                    current_epoch_time = time.time()
+                    db_array = []
+                    ecsdata = {}
+                    ecsdata_metrics = {}
+                    ecsdata_summary = {}
+                    fields = {}
+                    tags = {}
+                    target_name = "LocalZoneReplicationBootstrap"
 
-                tags['VDC'] = _ecsVDCLookup.vdc_json[ecsconnection.authentication.host]
+                    tags['VDC'] = _ecsVDCLookup.vdc_json[ecsconnection.authentication.host]
 
-                # Grab just node information
-                replication_link_bootstrap_data = local_zone_bootstrap_data['_embedded']['_instances']
+                    # Grab just node information
+                    replication_link_bootstrap_data = local_zone_bootstrap_data['_embedded']['_instances']
 
-                # Using 'local_zone_bootstrap_data' so we can re-use code without changing references
-                for local_zone_bootstrap_data in replication_link_bootstrap_data:
+                    # Using 'local_zone_bootstrap_data' so we can re-use code without changing references
+                    for local_zone_bootstrap_data in replication_link_bootstrap_data:
 
-                    # Not handling a few metrics for now
-                    local_zone_bootstrap_data.pop('_links', None)
+                        # Not handling a few metrics for now
+                        local_zone_bootstrap_data.pop('_links', None)
 
-                    bootstrap_rg_name = local_zone_bootstrap_data['rgName']
-                    ecsdata[bootstrap_rg_name] = {}
-                    ecsdata_metrics[bootstrap_rg_name] = {}
-                    ecsdata_summary[bootstrap_rg_name] = {}
+                        bootstrap_rg_name = local_zone_bootstrap_data['rgName']
+                        ecsdata[bootstrap_rg_name] = {}
+                        ecsdata_metrics[bootstrap_rg_name] = {}
+                        ecsdata_summary[bootstrap_rg_name] = {}
 
-                    for field in local_zone_bootstrap_data:
-                        if type(local_zone_bootstrap_data[field]) is unicode:
-                            try:
+                        for field in local_zone_bootstrap_data:
+                            if type(local_zone_bootstrap_data[field]) is unicode:
+                                try:
+                                    logger.debug(MODULE_NAME + '::ecs_collect_local_zone_bootstrap_data()::field from '
+                                                                'local_zone_bootstrap_data being processed is: ' + field)
+                                    ecsdata[bootstrap_rg_name][field] = float(local_zone_bootstrap_data[field])
+                                except Exception as ex1:
+                                    try:
+                                        # We're here because trying to convert to a float failed.
+                                        ecsdata[bootstrap_rg_name][field] = local_zone_bootstrap_data[field].encode("utf-8")
+                                    except Exception as ex2:
+                                        pass
+
+                            elif type(local_zone_bootstrap_data[field]) is list:
                                 logger.debug(MODULE_NAME + '::ecs_collect_local_zone_bootstrap_data()::field from '
                                                             'local_zone_bootstrap_data being processed is: ' + field)
-                                ecsdata[bootstrap_rg_name][field] = float(local_zone_bootstrap_data[field])
-                            except Exception as ex1:
-                                try:
-                                    # We're here because trying to convert to a float failed.
-                                    ecsdata[bootstrap_rg_name][field] = local_zone_bootstrap_data[field].encode("utf-8")
-                                except Exception as ex2:
-                                    pass
+                                ecsconnection.get_ecs_detail_data(field=field, metric_list=local_zone_bootstrap_data[field],
+                                                                metric_values=ecsdata_metrics[bootstrap_rg_name])
 
-                        elif type(local_zone_bootstrap_data[field]) is list:
-                            logger.debug(MODULE_NAME + '::ecs_collect_local_zone_bootstrap_data()::field from '
-                                                        'local_zone_bootstrap_data being processed is: ' + field)
-                            ecsconnection.get_ecs_detail_data(field=field, metric_list=local_zone_bootstrap_data[field],
-                                                            metric_values=ecsdata_metrics[bootstrap_rg_name])
+                            else:
+                                logger.debug(MODULE_NAME + '::ecs_collect_local_zone_bootstrap_data()::field from '
+                                                            'local_zone_bootstrap_data being processed is: ' + field)
+                                ecsconnection.get_ecs_summary_data(field=field, summary_dict=local_zone_bootstrap_data[field],
+                                                                 current_epoch=current_epoch_time, summary_values=ecsdata_summary[bootstrap_rg_name])
 
-                        else:
-                            logger.debug(MODULE_NAME + '::ecs_collect_local_zone_bootstrap_data()::field from '
-                                                        'local_zone_bootstrap_data being processed is: ' + field)
-                            ecsconnection.get_ecs_summary_data(field=field, summary_dict=local_zone_bootstrap_data[field],
-                                                             current_epoch=current_epoch_time, summary_values=ecsdata_summary[bootstrap_rg_name])
-
-                for bootstrap_rg_name in ecsdata:
-                    db_array = []
-                    tags['ReplicationGroupID'] = bootstrap_rg_name
-                    db_json = {
-                        "measurement": target_name,
-                        "tags": tags,
-                        "fields": ecsdata[bootstrap_rg_name],
-                        "time": current_time
-                    }
-                    db_array.append(db_json.copy())
-                    influxclient.write_points(db_array)
-                    logger.debug(MODULE_NAME + '::ecs_collect_local_zone_bootstrap_data()::'
-                                                'Local Zone Failed Bootstrap data db_array is: \r\n\r\n'.join(str(db_array)))
-
-                for bootstrap_rg_name in ecsdata_metrics:
-                    db_array = []
-                    tags['ReplicationGroupID'] = bootstrap_rg_name
-
-                    for times in ecsdata_metrics[bootstrap_rg_name]:
-
-                        influxdb_time = datetime.datetime.utcfromtimestamp(int(times))
-                        influxdb_time = influxdb_time.strftime("%Y-%m-%dT%H:%M:%S")
-
+                    for bootstrap_rg_name in ecsdata:
+                        db_array = []
+                        tags['ReplicationGroupID'] = bootstrap_rg_name
                         db_json = {
-                            "measurement": target_name+"Metrics",
+                            "measurement": target_name,
                             "tags": tags,
-                            "fields": ecsdata_metrics[bootstrap_rg_name][times],
-                            "time": influxdb_time
+                            "fields": ecsdata[bootstrap_rg_name],
+                            "time": current_time
                         }
                         db_array.append(db_json.copy())
+                        influxclient.write_points(db_array)
+                        logger.debug(MODULE_NAME + '::ecs_collect_local_zone_bootstrap_data()::'
+                                                    'Local Zone Failed Bootstrap data db_array is: \r\n\r\n'.join(str(db_array)))
 
-                    influxclient.write_points(db_array)
-                    logger.debug(MODULE_NAME + '::ecs_collect_local_zone_bootstrap_data()::'
-                                                'Local Zone Failed Bootstrap metrics db_array is: \r\n\r\n'.join(str(db_array)))
+                    for bootstrap_rg_name in ecsdata_metrics:
+                        db_array = []
+                        tags['ReplicationGroupID'] = bootstrap_rg_name
 
-                for bootstrap_rg_name in ecsdata_summary:
-                    db_array = []
-                    tags['ReplicationGroupID'] = bootstrap_rg_name
+                        for times in ecsdata_metrics[bootstrap_rg_name]:
 
-                    for times in ecsdata_summary[bootstrap_rg_name]:
-                        influxdb_time = datetime.datetime.utcfromtimestamp(int(times))
-                        influxdb_time = influxdb_time.strftime("%Y-%m-%dT%H:%M:%S")
+                            influxdb_time = datetime.datetime.utcfromtimestamp(int(times))
+                            influxdb_time = influxdb_time.strftime("%Y-%m-%dT%H:%M:%S")
 
-                        db_json = {
-                            "measurement": target_name+"Summary",
-                            "tags": tags,
-                            "fields": ecsdata_summary[bootstrap_rg_name][times],
-                            "time": influxdb_time
-                        }
-                        db_array.append(db_json.copy())
+                            db_json = {
+                                "measurement": target_name+"Metrics",
+                                "tags": tags,
+                                "fields": ecsdata_metrics[bootstrap_rg_name][times],
+                                "time": influxdb_time
+                            }
+                            db_array.append(db_json.copy())
 
-                    influxclient.write_points(db_array)
-                    logger.debug(MODULE_NAME + '::ecs_collect_local_zone_bootstrap_data()::'
-                                                'Local Zone Failed Bootstrap summary db_array is: \r\n\r\n'.join(str(db_array)))
+                        influxclient.write_points(db_array)
+                        logger.debug(MODULE_NAME + '::ecs_collect_local_zone_bootstrap_data()::'
+                                                    'Local Zone Failed Bootstrap metrics db_array is: \r\n\r\n'.join(str(db_array)))
 
-        if controlledShutdown.kill_now:
-            print(MODULE_NAME + "ecs_collect_local_zone_bootstrap_data()::"
-                                "Shutdown detected.  Terminating polling.")
-            break
+                    for bootstrap_rg_name in ecsdata_summary:
+                        db_array = []
+                        tags['ReplicationGroupID'] = bootstrap_rg_name
 
-        # Wait for specific polling interval
-        time.sleep(float(pollinginterval))
+                        for times in ecsdata_summary[bootstrap_rg_name]:
+                            influxdb_time = datetime.datetime.utcfromtimestamp(int(times))
+                            influxdb_time = influxdb_time.strftime("%Y-%m-%dT%H:%M:%S")
+
+                            db_json = {
+                                "measurement": target_name+"Summary",
+                                "tags": tags,
+                                "fields": ecsdata_summary[bootstrap_rg_name][times],
+                                "time": influxdb_time
+                            }
+                            db_array.append(db_json.copy())
+
+                        influxclient.write_points(db_array)
+                        logger.debug(MODULE_NAME + '::ecs_collect_local_zone_bootstrap_data()::'
+                                                    'Local Zone Failed Bootstrap summary db_array is: \r\n\r\n'.join(str(db_array)))
+
+            if controlledShutdown.kill_now:
+                print(MODULE_NAME + "ecs_collect_local_zone_bootstrap_data()::"
+                                    "Shutdown detected.  Terminating polling.")
+                break
+
+            # Wait for specific polling interval
+            time.sleep(float(pollinginterval))
+    except Exception as e:
+        _logger.error(MODULE_NAME + '::ecs_collect_local_zone_bootstrap_data()::The following unexpected '
+                                    'exception occured: ' + str(e) + "\n" + traceback.format_exc())
 
 
 def ecs_authenticate():
@@ -1127,30 +1154,34 @@ Main
 """
 if __name__ == "__main__":
 
-    # Create object to support controlled shutdown
-    controlledShutdown = ECSDataCollectionShutdown()
+    try:
+        # Create object to support controlled shutdown
+        controlledShutdown = ECSDataCollectionShutdown()
 
-    # Dump out application path
-    currentApplicationDirectory = os.getcwd()
-    configFilePath = os.path.abspath(os.path.join(currentApplicationDirectory, "configuration", CONFIG_FILE))
-    vdcLookupFilePath = os.path.abspath(os.path.join(currentApplicationDirectory, "configuration", VDC_LOOKUP_FILE))
+        # Dump out application path
+        currentApplicationDirectory = os.getcwd()
+        configFilePath = os.path.abspath(os.path.join(currentApplicationDirectory, "configuration", CONFIG_FILE))
+        vdcLookupFilePath = os.path.abspath(os.path.join(currentApplicationDirectory, "configuration", VDC_LOOKUP_FILE))
 
-    print(MODULE_NAME + "__main__::Current directory is : " + currentApplicationDirectory)
-    print(MODULE_NAME + "__main__::Configuration file path is: " + configFilePath)
+        print(MODULE_NAME + "::__main__::Current directory is : " + currentApplicationDirectory)
+        print(MODULE_NAME + "::__main__::Configuration file path is: " + configFilePath)
 
-    # Initialize configuration and VDC Lookup
-    ecs_config(configFilePath, vdcLookupFilePath)
+        # Initialize configuration and VDC Lookup
+        ecs_config(configFilePath, vdcLookupFilePath)
 
-    # Initialize connection(s) to ECS
-    if ecs_authenticate():
+        # Initialize connection(s) to ECS
+        if ecs_authenticate():
 
-        # Initialize database connection
-        if influx_init():
+            # Initialize database connection
+            if influx_init():
 
-            # Launch ECS Data Collection polling threads
-            ecs_data_collection()
+                # Launch ECS Data Collection polling threads
+                ecs_data_collection()
 
-            # Check for shutdown
-            if controlledShutdown.kill_now:
-                print(MODULE_NAME + "__main__::Controlled shutdown completed.")
+                # Check for shutdown
+                if controlledShutdown.kill_now:
+                    print(MODULE_NAME + "__main__::Controlled shutdown completed.")
+    except Exception as e:
+        print(MODULE_NAME + '__main__::The following unexpected error occured: '
+              + str(e) + "\n" + traceback.format_exc())
 

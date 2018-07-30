@@ -17,6 +17,12 @@
       "version": "5.1.4"
     },
     {
+      "type": "panel",
+      "id": "grafana-piechart-panel",
+      "name": "Pie Chart",
+      "version": "1.3.3"
+    },
+    {
       "type": "datasource",
       "id": "influxdb",
       "name": "InfluxDB",
@@ -46,261 +52,9 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": null,
-  "iteration": 1532048442268,
+  "iteration": 1532958495086,
   "links": [],
   "panels": [
-    {
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 0
-      },
-      "id": 16,
-      "panels": [],
-      "title": "Garbage Collection Configuration",
-      "type": "row"
-    },
-    {
-      "cacheTimeout": null,
-      "colorBackground": false,
-      "colorValue": true,
-      "colors": [
-        "#299c46",
-        "rgba(237, 129, 40, 0.89)",
-        "#d44a3a"
-      ],
-      "datasource": "${DS_ECSAPIDATA32}",
-      "format": "none",
-      "gauge": {
-        "maxValue": 100,
-        "minValue": 0,
-        "show": false,
-        "thresholdLabels": false,
-        "thresholdMarkers": true
-      },
-      "gridPos": {
-        "h": 3,
-        "w": 4,
-        "x": 0,
-        "y": 1
-      },
-      "id": 7,
-      "interval": null,
-      "links": [],
-      "mappingType": 1,
-      "mappingTypes": [
-        {
-          "name": "value to text",
-          "value": 1
-        },
-        {
-          "name": "range to text",
-          "value": 2
-        }
-      ],
-      "maxDataPoints": 100,
-      "nullPointMode": "connected",
-      "nullText": null,
-      "postfix": "",
-      "postfixFontSize": "50%",
-      "prefix": "",
-      "prefixFontSize": "50%",
-      "rangeMaps": [
-        {
-          "from": "null",
-          "text": "N/A",
-          "to": "null"
-        }
-      ],
-      "sparkline": {
-        "fillColor": "rgba(31, 118, 189, 0.18)",
-        "full": false,
-        "lineColor": "rgb(31, 120, 193)",
-        "show": false
-      },
-      "tableColumn": "",
-      "targets": [
-        {
-          "groupBy": [
-            {
-              "params": [
-                "$interval"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "null"
-              ],
-              "type": "fill"
-            }
-          ],
-          "measurement": "LocalZone",
-          "orderByTime": "ASC",
-          "policy": "default",
-          "refId": "A",
-          "resultFormat": "time_series",
-          "select": [
-            [
-              {
-                "params": [
-                  "gcSystemMetadataIsEnabled"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "distinct"
-              }
-            ]
-          ],
-          "tags": [
-            {
-              "key": "VDC",
-              "operator": "=~",
-              "value": "/^$VDC$/"
-            }
-          ]
-        }
-      ],
-      "thresholds": "true,false",
-      "title": "System Metadata GC Enabled",
-      "type": "singlestat",
-      "valueFontSize": "80%",
-      "valueMaps": [
-        {
-          "op": "=",
-          "text": "N/A",
-          "value": "null"
-        }
-      ],
-      "valueName": "current"
-    },
-    {
-      "cacheTimeout": null,
-      "colorBackground": false,
-      "colorValue": true,
-      "colors": [
-        "#299c46",
-        "rgba(237, 129, 40, 0.89)",
-        "#d44a3a"
-      ],
-      "datasource": "${DS_ECSAPIDATA32}",
-      "format": "none",
-      "gauge": {
-        "maxValue": 100,
-        "minValue": 0,
-        "show": false,
-        "thresholdLabels": false,
-        "thresholdMarkers": true
-      },
-      "gridPos": {
-        "h": 3,
-        "w": 4,
-        "x": 4,
-        "y": 1
-      },
-      "id": 8,
-      "interval": null,
-      "links": [],
-      "mappingType": 1,
-      "mappingTypes": [
-        {
-          "name": "value to text",
-          "value": 1
-        },
-        {
-          "name": "range to text",
-          "value": 2
-        }
-      ],
-      "maxDataPoints": 100,
-      "nullPointMode": "connected",
-      "nullText": null,
-      "postfix": "",
-      "postfixFontSize": "50%",
-      "prefix": "",
-      "prefixFontSize": "50%",
-      "rangeMaps": [
-        {
-          "from": "null",
-          "text": "N/A",
-          "to": "null"
-        }
-      ],
-      "sparkline": {
-        "fillColor": "rgba(31, 118, 189, 0.18)",
-        "full": false,
-        "lineColor": "rgb(31, 120, 193)",
-        "show": false
-      },
-      "tableColumn": "",
-      "targets": [
-        {
-          "groupBy": [
-            {
-              "params": [
-                "$__interval"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "null"
-              ],
-              "type": "fill"
-            }
-          ],
-          "measurement": "LocalZone",
-          "orderByTime": "ASC",
-          "policy": "default",
-          "refId": "A",
-          "resultFormat": "time_series",
-          "select": [
-            [
-              {
-                "params": [
-                  "gcUserDataIsEnabled"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "distinct"
-              }
-            ]
-          ],
-          "tags": []
-        }
-      ],
-      "thresholds": "true,false",
-      "title": "User Data GC Enabled",
-      "type": "singlestat",
-      "valueFontSize": "80%",
-      "valueMaps": [
-        {
-          "op": "=",
-          "text": "N/A",
-          "value": "null"
-        }
-      ],
-      "valueName": "current"
-    },
-    {
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 4
-      },
-      "id": 14,
-      "panels": [],
-      "title": "Garbage Collected",
-      "type": "row"
-    },
     {
       "cacheTimeout": null,
       "colorBackground": false,
@@ -321,10 +75,10 @@
         "thresholdMarkers": true
       },
       "gridPos": {
-        "h": 3,
+        "h": 4,
         "w": 4,
         "x": 0,
-        "y": 5
+        "y": 0
       },
       "id": 2,
       "interval": null,
@@ -356,13 +110,14 @@
       ],
       "sparkline": {
         "fillColor": "rgba(31, 118, 189, 0.18)",
-        "full": true,
+        "full": false,
         "lineColor": "rgb(31, 120, 193)",
         "show": true
       },
       "tableColumn": "",
       "targets": [
         {
+          "alias": "Total Provisioned Capacity",
           "groupBy": [
             {
               "params": [
@@ -386,7 +141,7 @@
             [
               {
                 "params": [
-                  "gcCombinedTotalDetectedCurrent"
+                  "diskSpaceTotalCurrent"
                 ],
                 "type": "field"
               },
@@ -396,11 +151,17 @@
               }
             ]
           ],
-          "tags": []
+          "tags": [
+            {
+              "key": "VDC",
+              "operator": "=~",
+              "value": "/^$VDC$/"
+            }
+          ]
         }
       ],
       "thresholds": "",
-      "title": "Total Garbage Detected",
+      "title": "Cluster Provisioned Capacity",
       "type": "singlestat",
       "valueFontSize": "80%",
       "valueMaps": [
@@ -432,10 +193,128 @@
         "thresholdMarkers": true
       },
       "gridPos": {
-        "h": 3,
+        "h": 4,
         "w": 4,
         "x": 4,
-        "y": 5
+        "y": 0
+      },
+      "id": 6,
+      "interval": null,
+      "links": [],
+      "mappingType": 1,
+      "mappingTypes": [
+        {
+          "name": "value to text",
+          "value": 1
+        },
+        {
+          "name": "range to text",
+          "value": 2
+        }
+      ],
+      "maxDataPoints": 100,
+      "nullPointMode": "connected",
+      "nullText": null,
+      "postfix": "",
+      "postfixFontSize": "50%",
+      "prefix": "",
+      "prefixFontSize": "50%",
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "sparkline": {
+        "fillColor": "rgba(31, 118, 189, 0.18)",
+        "full": false,
+        "lineColor": "rgb(31, 120, 193)",
+        "show": true
+      },
+      "tableColumn": "",
+      "targets": [
+        {
+          "alias": "Cluster Used Capacity",
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "null"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "LocalZoneMetrics",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "refId": "A",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "diskSpaceAllocatedCurrent"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "mean"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "VDC",
+              "operator": "=~",
+              "value": "/^$VDC$/"
+            }
+          ]
+        }
+      ],
+      "thresholds": "",
+      "title": "Cluster Used Capacity",
+      "type": "singlestat",
+      "valueFontSize": "80%",
+      "valueMaps": [
+        {
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
+        }
+      ],
+      "valueName": "current"
+    },
+    {
+      "cacheTimeout": null,
+      "colorBackground": false,
+      "colorValue": true,
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a"
+      ],
+      "datasource": "${DS_ECSAPIDATA32}",
+      "decimals": 2,
+      "format": "bytes",
+      "gauge": {
+        "maxValue": 100,
+        "minValue": 0,
+        "show": false,
+        "thresholdLabels": false,
+        "thresholdMarkers": true
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 8,
+        "y": 0
       },
       "id": 3,
       "interval": null,
@@ -467,13 +346,14 @@
       ],
       "sparkline": {
         "fillColor": "rgba(31, 118, 189, 0.18)",
-        "full": true,
+        "full": false,
         "lineColor": "rgb(31, 120, 193)",
         "show": true
       },
       "tableColumn": "",
       "targets": [
         {
+          "alias": "Total Available Capacity",
           "groupBy": [
             {
               "params": [
@@ -497,7 +377,7 @@
             [
               {
                 "params": [
-                  "gcCombinedReclaimedCurrent"
+                  "diskSpaceFreeCurrent"
                 ],
                 "type": "field"
               },
@@ -507,11 +387,17 @@
               }
             ]
           ],
-          "tags": []
+          "tags": [
+            {
+              "key": "VDC",
+              "operator": "=~",
+              "value": "/^$VDC$/"
+            }
+          ]
         }
       ],
       "thresholds": "",
-      "title": "Capacity Reclaimed",
+      "title": "Cluster Available Capacity",
       "type": "singlestat",
       "valueFontSize": "80%",
       "valueMaps": [
@@ -543,121 +429,10 @@
         "thresholdMarkers": true
       },
       "gridPos": {
-        "h": 3,
-        "w": 4,
-        "x": 8,
-        "y": 5
-      },
-      "id": 4,
-      "interval": null,
-      "links": [],
-      "mappingType": 1,
-      "mappingTypes": [
-        {
-          "name": "value to text",
-          "value": 1
-        },
-        {
-          "name": "range to text",
-          "value": 2
-        }
-      ],
-      "maxDataPoints": 100,
-      "nullPointMode": "connected",
-      "nullText": null,
-      "postfix": "",
-      "postfixFontSize": "50%",
-      "prefix": "",
-      "prefixFontSize": "50%",
-      "rangeMaps": [
-        {
-          "from": "null",
-          "text": "N/A",
-          "to": "null"
-        }
-      ],
-      "sparkline": {
-        "fillColor": "rgba(31, 118, 189, 0.18)",
-        "full": true,
-        "lineColor": "rgb(31, 120, 193)",
-        "show": true
-      },
-      "tableColumn": "",
-      "targets": [
-        {
-          "groupBy": [
-            {
-              "params": [
-                "$__interval"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "null"
-              ],
-              "type": "fill"
-            }
-          ],
-          "measurement": "LocalZoneMetrics",
-          "orderByTime": "ASC",
-          "policy": "default",
-          "refId": "A",
-          "resultFormat": "time_series",
-          "select": [
-            [
-              {
-                "params": [
-                  "gcCombinedPendingCurrent"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "mean"
-              }
-            ]
-          ],
-          "tags": []
-        }
-      ],
-      "thresholds": "",
-      "title": "Capacity Pending Reclaimation",
-      "type": "singlestat",
-      "valueFontSize": "80%",
-      "valueMaps": [
-        {
-          "op": "=",
-          "text": "N/A",
-          "value": "null"
-        }
-      ],
-      "valueName": "current"
-    },
-    {
-      "cacheTimeout": null,
-      "colorBackground": false,
-      "colorValue": true,
-      "colors": [
-        "#299c46",
-        "rgba(237, 129, 40, 0.89)",
-        "#d44a3a"
-      ],
-      "datasource": "${DS_ECSAPIDATA32}",
-      "decimals": 2,
-      "format": "bytes",
-      "gauge": {
-        "maxValue": 100,
-        "minValue": 0,
-        "show": false,
-        "thresholdLabels": false,
-        "thresholdMarkers": true
-      },
-      "gridPos": {
-        "h": 3,
+        "h": 4,
         "w": 4,
         "x": 12,
-        "y": 5
+        "y": 0
       },
       "id": 5,
       "interval": null,
@@ -689,13 +464,14 @@
       ],
       "sparkline": {
         "fillColor": "rgba(31, 118, 189, 0.18)",
-        "full": true,
+        "full": false,
         "lineColor": "rgb(31, 120, 193)",
         "show": true
       },
       "tableColumn": "",
       "targets": [
         {
+          "alias": "Total Reserved Capacity",
           "groupBy": [
             {
               "params": [
@@ -719,7 +495,7 @@
             [
               {
                 "params": [
-                  "gcCombinedUnreclaimableCurrent"
+                  "diskSpaceReservedCurrent"
                 ],
                 "type": "field"
               },
@@ -729,11 +505,17 @@
               }
             ]
           ],
-          "tags": []
+          "tags": [
+            {
+              "key": "VDC",
+              "operator": "=~",
+              "value": "/^$VDC$/"
+            }
+          ]
         }
       ],
       "thresholds": "",
-      "title": "Un-Reclaimable Garbage",
+      "title": "Cluster Reserved Capacity",
       "type": "singlestat",
       "valueFontSize": "80%",
       "valueMaps": [
@@ -746,80 +528,42 @@
       "valueName": "current"
     },
     {
-      "collapsed": false,
+      "aliasColors": {},
+      "breakPoint": "50%",
+      "cacheTimeout": null,
+      "combine": {
+        "label": "Others",
+        "threshold": 0
+      },
+      "datasource": "${DS_ECSAPIDATA32}",
+      "decimals": 2,
+      "fontSize": "80%",
+      "format": "bytes",
       "gridPos": {
-        "h": 1,
-        "w": 24,
+        "h": 7,
+        "w": 8,
         "x": 0,
-        "y": 8
+        "y": 4
       },
-      "id": 12,
-      "panels": [],
-      "title": "Capacity Reclaimed",
-      "type": "row"
-    },
-    {
-      "cacheTimeout": null,
-      "colorBackground": false,
-      "colorValue": true,
-      "colors": [
-        "#299c46",
-        "rgba(237, 129, 40, 0.89)",
-        "#d44a3a"
-      ],
-      "datasource": "${DS_ECSAPIDATA32}",
-      "decimals": 2,
-      "format": "bytes",
-      "gauge": {
-        "maxValue": 100,
-        "minValue": 0,
-        "show": false,
-        "thresholdLabels": false,
-        "thresholdMarkers": true
-      },
-      "gridPos": {
-        "h": 3,
-        "w": 4,
-        "x": 0,
-        "y": 9
-      },
-      "id": 17,
+      "id": 8,
       "interval": null,
-      "links": [],
-      "mappingType": 1,
-      "mappingTypes": [
-        {
-          "name": "value to text",
-          "value": 1
-        },
-        {
-          "name": "range to text",
-          "value": 2
-        }
-      ],
-      "maxDataPoints": 100,
-      "nullPointMode": "connected",
-      "nullText": null,
-      "postfix": "",
-      "postfixFontSize": "50%",
-      "prefix": "",
-      "prefixFontSize": "50%",
-      "rangeMaps": [
-        {
-          "from": "null",
-          "text": "N/A",
-          "to": "null"
-        }
-      ],
-      "sparkline": {
-        "fillColor": "rgba(31, 118, 189, 0.18)",
-        "full": true,
-        "lineColor": "rgb(31, 120, 193)",
-        "show": true
+      "legend": {
+        "percentage": true,
+        "percentageDecimals": 2,
+        "show": true,
+        "sort": "current",
+        "sortDesc": true,
+        "values": true
       },
-      "tableColumn": "",
+      "legendType": "Right side",
+      "links": [],
+      "maxDataPoints": 3,
+      "nullPointMode": "connected",
+      "pieType": "pie",
+      "strokeWidth": 1,
       "targets": [
         {
+          "alias": "Geo Cache",
           "groupBy": [
             {
               "params": [
@@ -843,7 +587,7 @@
             [
               {
                 "params": [
-                  "gcCombinedReclaimedCurrent"
+                  "diskSpaceAllocatedGeoCacheCurrent"
                 ],
                 "type": "field"
               },
@@ -853,84 +597,16 @@
               }
             ]
           ],
-          "tags": []
-        }
-      ],
-      "thresholds": "",
-      "title": "Capacity Reclaimed",
-      "type": "singlestat",
-      "valueFontSize": "80%",
-      "valueMaps": [
-        {
-          "op": "=",
-          "text": "N/A",
-          "value": "null"
-        }
-      ],
-      "valueName": "current"
-    },
-    {
-      "cacheTimeout": null,
-      "colorBackground": false,
-      "colorValue": true,
-      "colors": [
-        "#299c46",
-        "rgba(237, 129, 40, 0.89)",
-        "#d44a3a"
-      ],
-      "datasource": "${DS_ECSAPIDATA32}",
-      "decimals": 2,
-      "format": "bytes",
-      "gauge": {
-        "maxValue": 100,
-        "minValue": 0,
-        "show": false,
-        "thresholdLabels": false,
-        "thresholdMarkers": true
-      },
-      "gridPos": {
-        "h": 3,
-        "w": 4,
-        "x": 4,
-        "y": 9
-      },
-      "id": 9,
-      "interval": null,
-      "links": [],
-      "mappingType": 1,
-      "mappingTypes": [
-        {
-          "name": "value to text",
-          "value": 1
+          "tags": [
+            {
+              "key": "VDC",
+              "operator": "=~",
+              "value": "/^$VDC$/"
+            }
+          ]
         },
         {
-          "name": "range to text",
-          "value": 2
-        }
-      ],
-      "maxDataPoints": 100,
-      "nullPointMode": "connected",
-      "nullText": null,
-      "postfix": "",
-      "postfixFontSize": "50%",
-      "prefix": "",
-      "prefixFontSize": "50%",
-      "rangeMaps": [
-        {
-          "from": "null",
-          "text": "N/A",
-          "to": "null"
-        }
-      ],
-      "sparkline": {
-        "fillColor": "rgba(31, 118, 189, 0.18)",
-        "full": true,
-        "lineColor": "rgb(31, 120, 193)",
-        "show": true
-      },
-      "tableColumn": "",
-      "targets": [
-        {
+          "alias": "Geo Copy",
           "groupBy": [
             {
               "params": [
@@ -948,13 +624,13 @@
           "measurement": "LocalZoneMetrics",
           "orderByTime": "ASC",
           "policy": "default",
-          "refId": "A",
+          "refId": "B",
           "resultFormat": "time_series",
           "select": [
             [
               {
                 "params": [
-                  "gcUserReclaimedCurrent"
+                  "diskSpaceAllocatedGeoCopyCurrent"
                 ],
                 "type": "field"
               },
@@ -964,84 +640,16 @@
               }
             ]
           ],
-          "tags": []
-        }
-      ],
-      "thresholds": "",
-      "title": "User Data Reclaimed",
-      "type": "singlestat",
-      "valueFontSize": "80%",
-      "valueMaps": [
-        {
-          "op": "=",
-          "text": "N/A",
-          "value": "null"
-        }
-      ],
-      "valueName": "current"
-    },
-    {
-      "cacheTimeout": null,
-      "colorBackground": false,
-      "colorValue": true,
-      "colors": [
-        "#299c46",
-        "rgba(237, 129, 40, 0.89)",
-        "#d44a3a"
-      ],
-      "datasource": "${DS_ECSAPIDATA32}",
-      "decimals": 2,
-      "format": "bytes",
-      "gauge": {
-        "maxValue": 100,
-        "minValue": 0,
-        "show": false,
-        "thresholdLabels": false,
-        "thresholdMarkers": true
-      },
-      "gridPos": {
-        "h": 3,
-        "w": 4,
-        "x": 8,
-        "y": 9
-      },
-      "id": 10,
-      "interval": null,
-      "links": [],
-      "mappingType": 1,
-      "mappingTypes": [
-        {
-          "name": "value to text",
-          "value": 1
+          "tags": [
+            {
+              "key": "VDC",
+              "operator": "=~",
+              "value": "/^$VDC$/"
+            }
+          ]
         },
         {
-          "name": "range to text",
-          "value": 2
-        }
-      ],
-      "maxDataPoints": 100,
-      "nullPointMode": "connected",
-      "nullText": null,
-      "postfix": "",
-      "postfixFontSize": "50%",
-      "prefix": "",
-      "prefixFontSize": "50%",
-      "rangeMaps": [
-        {
-          "from": "null",
-          "text": "N/A",
-          "to": "null"
-        }
-      ],
-      "sparkline": {
-        "fillColor": "rgba(31, 118, 189, 0.18)",
-        "full": true,
-        "lineColor": "rgb(31, 120, 193)",
-        "show": true
-      },
-      "tableColumn": "",
-      "targets": [
-        {
+          "alias": "Protection Overhead",
           "groupBy": [
             {
               "params": [
@@ -1059,13 +667,13 @@
           "measurement": "LocalZoneMetrics",
           "orderByTime": "ASC",
           "policy": "default",
-          "refId": "A",
+          "refId": "C",
           "resultFormat": "time_series",
           "select": [
             [
               {
                 "params": [
-                  "gcSystemReclaimedCurrent"
+                  "diskSpaceAllocatedLocalProtectionCurrent"
                 ],
                 "type": "field"
               },
@@ -1075,20 +683,103 @@
               }
             ]
           ],
-          "tags": []
-        }
-      ],
-      "thresholds": "",
-      "title": "System Metadata Reclaimed",
-      "type": "singlestat",
-      "valueFontSize": "80%",
-      "valueMaps": [
+          "tags": [
+            {
+              "key": "VDC",
+              "operator": "=~",
+              "value": "/^$VDC$/"
+            }
+          ]
+        },
         {
-          "op": "=",
-          "text": "N/A",
-          "value": "null"
+          "alias": "System Metadata",
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "null"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "LocalZoneMetrics",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "refId": "D",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "diskSpaceAllocatedSystemMetadataCurrent"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "mean"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "VDC",
+              "operator": "=~",
+              "value": "/^$VDC$/"
+            }
+          ]
+        },
+        {
+          "alias": "User Data",
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "null"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "LocalZoneMetrics",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "refId": "E",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "diskSpaceAllocatedUserDataCurrent"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "mean"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "VDC",
+              "operator": "=~",
+              "value": "/^$VDC$/"
+            }
+          ]
         }
       ],
+      "title": "Cluster Used Capacity Detail",
+      "type": "grafana-piechart-panel",
       "valueName": "current"
     }
   ],
@@ -1104,7 +795,7 @@
         "hide": 0,
         "includeAll": false,
         "label": "VDC",
-        "multi": true,
+        "multi": false,
         "name": "VDC",
         "options": [],
         "query": "SHOW TAG VALUES WITH KEY = \"VDC\"",
@@ -1149,7 +840,7 @@
     ]
   },
   "timezone": "",
-  "title": "ECS 3.2 Garbage Collection",
-  "uid": "Gmsy4rNmz",
-  "version": 10
+  "title": "ECS 3.2 Cluster Capacity",
+  "uid": "45FeirHmk",
+  "version": 1
 }

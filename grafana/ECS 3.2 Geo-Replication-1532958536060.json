@@ -46,7 +46,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": null,
-  "iteration": 1532047817523,
+  "iteration": 1532958533007,
   "links": [],
   "panels": [
     {
@@ -70,7 +70,7 @@
       "datasource": "${DS_ECSAPIDATA32}",
       "fill": 1,
       "gridPos": {
-        "h": 6,
+        "h": 9,
         "w": 8,
         "x": 0,
         "y": 1
@@ -206,7 +206,7 @@
       "datasource": "${DS_ECSAPIDATA32}",
       "fill": 1,
       "gridPos": {
-        "h": 6,
+        "h": 9,
         "w": 16,
         "x": 8,
         "y": 1
@@ -396,7 +396,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 7
+        "y": 10
       },
       "id": 9,
       "panels": [],
@@ -411,10 +411,10 @@
       "datasource": "${DS_ECSAPIDATA32}",
       "fill": 1,
       "gridPos": {
-        "h": 5,
+        "h": 6,
         "w": 16,
         "x": 0,
-        "y": 8
+        "y": 11
       },
       "id": 12,
       "legend": {
@@ -452,12 +452,18 @@
             },
             {
               "params": [
-                "null"
+                "VDC"
               ],
-              "type": "fill"
+              "type": "tag"
+            },
+            {
+              "params": [
+                "ReplicationGroupID"
+              ],
+              "type": "tag"
             }
           ],
-          "measurement": "LocalZone",
+          "measurement": "LocalZoneReplication",
           "orderByTime": "ASC",
           "policy": "default",
           "refId": "A",
@@ -487,6 +493,12 @@
               "key": "VDC",
               "operator": "=~",
               "value": "/^$VDC$/"
+            },
+            {
+              "condition": "AND",
+              "key": "ReplicationGroupID",
+              "operator": "=~",
+              "value": "/^$RG$/"
             }
           ]
         }
@@ -543,7 +555,7 @@
         "h": 7,
         "w": 16,
         "x": 0,
-        "y": 13
+        "y": 17
       },
       "id": 13,
       "legend": {
@@ -631,7 +643,7 @@
       "thresholds": [],
       "timeFrom": null,
       "timeShift": null,
-      "title": "Replication Read Ingress Rate",
+      "title": "Replication Ingress Rate",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -679,7 +691,7 @@
         "h": 7,
         "w": 16,
         "x": 0,
-        "y": 20
+        "y": 24
       },
       "id": 10,
       "legend": {
@@ -739,7 +751,7 @@
             [
               {
                 "params": [
-                  "replicationIngressTrafficCurrent"
+                  "replicationEgressTrafficCurrent"
                 ],
                 "type": "field"
               },
@@ -767,7 +779,7 @@
       "thresholds": [],
       "timeFrom": null,
       "timeShift": null,
-      "title": "Replication Write Ingress Rate",
+      "title": "Replication Egress Rate",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -810,7 +822,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 27
+        "y": 31
       },
       "id": 6,
       "panels": [],
@@ -823,12 +835,13 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "${DS_ECSAPIDATA32}",
+      "decimals": 2,
       "fill": 1,
       "gridPos": {
-        "h": 6,
+        "h": 8,
         "w": 8,
         "x": 0,
-        "y": 28
+        "y": 32
       },
       "id": 2,
       "legend": {
@@ -932,8 +945,9 @@
       },
       "yaxes": [
         {
+          "decimals": 2,
           "format": "bytes",
-          "label": null,
+          "label": "",
           "logBase": 1,
           "max": null,
           "min": null,
@@ -959,12 +973,13 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "${DS_ECSAPIDATA32}",
+      "decimals": 2,
       "fill": 1,
       "gridPos": {
-        "h": 6,
+        "h": 8,
         "w": 8,
         "x": 8,
-        "y": 28
+        "y": 32
       },
       "id": 3,
       "legend": {
@@ -1068,8 +1083,9 @@
       },
       "yaxes": [
         {
+          "decimals": 2,
           "format": "bytes",
-          "label": null,
+          "label": "",
           "logBase": 1,
           "max": null,
           "min": null,
@@ -1095,12 +1111,13 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "${DS_ECSAPIDATA32}",
+      "decimals": 2,
       "fill": 1,
       "gridPos": {
         "h": 7,
         "w": 16,
         "x": 0,
-        "y": 34
+        "y": 40
       },
       "id": 4,
       "legend": {
@@ -1204,8 +1221,9 @@
       },
       "yaxes": [
         {
+          "decimals": 2,
           "format": "bytes",
-          "label": null,
+          "label": "",
           "logBase": 1,
           "max": null,
           "min": null,
@@ -1306,5 +1324,5 @@
   "timezone": "",
   "title": "ECS 3.2 Geo-Replication",
   "uid": "9F6jwdOik",
-  "version": 8
+  "version": 2
 }
