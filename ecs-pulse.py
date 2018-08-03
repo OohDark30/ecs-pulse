@@ -211,7 +211,7 @@ def ecs_collect_capacity_data(influxclient, logger, ecsmanagmentapi, pollinginte
 
                     # Dump array for debug
                     logger.debug(MODULE_NAME + '::ecs_collect_capacity_data()::'
-                                               'Capacity db_array is: \r\n\r\n'.join(str(db_array)))
+                                               'Capacity db_array is: \r\n\r\n' + (str(db_array)))
 
             if controlledShutdown.kill_now:
                 print(MODULE_NAME + "ecs_collect_capacity_data()::Shutdown detected.  Terminating polling.")
@@ -332,7 +332,7 @@ def ecs_collect_local_zone_data(influxclient, logger, ecsmanagmentapi, pollingin
 
                     # Dump array for debug
                     logger.debug(MODULE_NAME + '::ecs_collect_local_zone_data()::'
-                                               'Local Zone db_array is: \r\n\r\n'.join(str(db_array)))
+                                               'Local Zone db_array is: \r\n\r\n' + (str(db_array)))
 
             if controlledShutdown.kill_now:
                 print(MODULE_NAME + "ecs_collect_local_zone_data()::"
@@ -436,7 +436,7 @@ def ecs_collect_local_zone_node_data(influxclient, logger, ecsmanagmentapi, poll
                         db_array.append(db_json.copy())
                         influxclient.write_points(db_array)
                         logger.debug(MODULE_NAME + '::ecs_collect_local_zone_node_data()::'
-                                                   'Local Zone Node data db_array is: \r\n\r\n'.join(str(db_array)))
+                                                   'Local Zone Node data db_array is: \r\n\r\n' + str(db_array))
 
                     for node_display_name in ecsdata_metrics:
                         db_array = []
@@ -457,7 +457,7 @@ def ecs_collect_local_zone_node_data(influxclient, logger, ecsmanagmentapi, poll
 
                         influxclient.write_points(db_array)
                     logger.debug(MODULE_NAME + '::ecs_collect_local_zone_node_data()::'
-                                               'Local Zone Node metrics db_array is: \r\n\r\n'.join(str(db_array)))
+                                               'Local Zone Node metrics db_array is: \r\n\r\n' + str(db_array))
 
                     for node_display_name in ecsdata_summary:
                         db_array = []
@@ -477,7 +477,7 @@ def ecs_collect_local_zone_node_data(influxclient, logger, ecsmanagmentapi, poll
 
                         influxclient.write_points(db_array)
                         logger.debug(MODULE_NAME + '::ecs_collect_local_zone_node_data()::'
-                                                   'Local Zone Node summary db_array is: \r\n\r\n'.join(str(db_array)))
+                                                   'Local Zone Node summary db_array is: \r\n\r\n' + str(db_array))
 
             if controlledShutdown.kill_now:
                 print(MODULE_NAME + "ecs_collect_local_zone_node_data()::Shutdown detected.  Terminating polling.")
@@ -572,7 +572,7 @@ def ecs_collect_local_zone_disk_data(influxclient, logger, ecsmanagmentapi, poll
                     }
                     db_array.append(db_json.copy())
                     influxclient.write_points(db_array)
-                    logger.debug(MODULE_NAME + '::ecs_collect_local_zone_disk_data()::Local Zone Failed Disk data db_array is: \r\n\r\n'.join(str(db_array)))
+                    logger.debug(MODULE_NAME + '::ecs_collect_local_zone_disk_data()::Local Zone Failed Disk data db_array is: \r\n\r\n' + str(db_array))
 
                 for disk_display_name in ecsdata_metrics:
                     db_array = []
@@ -592,7 +592,7 @@ def ecs_collect_local_zone_disk_data(influxclient, logger, ecsmanagmentapi, poll
                         db_array.append(db_json.copy())
 
                     influxclient.write_points(db_array)
-                    logger.debug(MODULE_NAME + '::ecs_collect_local_zone_disk_data()::Local Zone Failed Disk metrics db_array is: \r\n\r\n'.join(str(db_array)))
+                    logger.debug(MODULE_NAME + '::ecs_collect_local_zone_disk_data()::Local Zone Failed Disk metrics db_array is: \r\n\r\n' + str(db_array))
 
                 for disk_display_name in ecsdata_summary:
                     db_array = []
@@ -612,7 +612,7 @@ def ecs_collect_local_zone_disk_data(influxclient, logger, ecsmanagmentapi, poll
 
                     influxclient.write_points(db_array)
                     logger.debug(MODULE_NAME + '::ecs_collect_local_zone_disk_data()::'
-                                               'Local Zone Failed Disk summary db_array is: \r\n\r\n'.join(str(db_array)))
+                                               'Local Zone Failed Disk summary db_array is: \r\n\r\n' + str(db_array))
 
         if controlledShutdown.kill_now:
             print(MODULE_NAME + "ecs_collect_local_zone_disk_data()::Shutdown detected.  Terminating polling.")
@@ -705,7 +705,7 @@ def ecs_collect_local_zone_replication_data(influxclient, logger, ecsmanagmentap
                     influxclient.write_points(db_array)
 
                     # Dump array for debug
-                    logger.debug(MODULE_NAME + '::ecs_collect_local_zone_replication_data()::Local Zone Replication field db_array is: \r\n\r\n'.join(str(db_array)))
+                    logger.debug(MODULE_NAME + '::ecs_collect_local_zone_replication_data()::Local Zone Replication field db_array is: \r\n\r\n' + str(db_array))
 
                 for node_name in ecsdata_metrics:
                     db_array = []
@@ -726,7 +726,7 @@ def ecs_collect_local_zone_replication_data(influxclient, logger, ecsmanagmentap
                     influxclient.write_points(db_array)
 
                     # Dump array for debug
-                    logger.debug(MODULE_NAME + '::ecs_collect_local_zone_replication_data()::Local Zone Replication metrics db_array is: \r\n\r\n'.join(str(db_array)))
+                    logger.debug(MODULE_NAME + '::ecs_collect_local_zone_replication_data()::Local Zone Replication metrics db_array is: \r\n\r\n' + str(db_array))
 
                 for node_name in ecsdata_summary:
                     db_array = []
@@ -748,7 +748,7 @@ def ecs_collect_local_zone_replication_data(influxclient, logger, ecsmanagmentap
 
                     # Dump array for debug
                     logger.debug(MODULE_NAME + '::ecs_collect_local_zone_replication_data()::'
-                                                'Local Zone Replication summary db_array is: \r\n\r\n'.join(str(db_array)))
+                                                'Local Zone Replication summary db_array is: \r\n\r\n' + str(db_array))
 
         if controlledShutdown.kill_now:
             print(MODULE_NAME + "ecs_collect_local_zone_replication_data()::Shutdown detected.  Terminating polling.")
@@ -843,7 +843,7 @@ def ecs_collect_local_zone_replication_failure_data(influxclient, logger, ecsman
                         db_array.append(db_json.copy())
                         influxclient.write_points(db_array)
                         logger.debug(MODULE_NAME + '::ecs_collect_local_zone_replication_failure_data()::'
-                                                    'Local Zone Failed Replication data db_array is: \r\n\r\n'.join(str(db_array)))
+                                                    'Local Zone Failed Replication data db_array is: \r\n\r\n' + str(db_array))
 
                     for failed_rg_name in ecsdata_metrics:
                         db_array = []
@@ -864,7 +864,7 @@ def ecs_collect_local_zone_replication_failure_data(influxclient, logger, ecsman
 
                         influxclient.write_points(db_array)
                         logger.debug(MODULE_NAME + '::ecs_collect_local_zone_replication_failure_data()::'
-                                                    'Local Zone Failed Replication metrics db_array is: \r\n\r\n'.join(str(db_array)))
+                                                    'Local Zone Failed Replication metrics db_array is: \r\n\r\n' + str(db_array))
 
                     for failed_rg_name in ecsdata_summary:
                         db_array = []
@@ -885,7 +885,7 @@ def ecs_collect_local_zone_replication_failure_data(influxclient, logger, ecsman
                         influxclient.write_points(db_array)
                         logger.debug(MODULE_NAME + '::ecs_collect_local_zone_replication_failure_data()::'
                                                    'Local Zone Failed Replication summary '
-                                                   'db_array is: \r\n\r\n'.join(str(db_array)))
+                                                   'db_array is: \r\n\r\n' + str(db_array))
 
             if controlledShutdown.kill_now:
                 print(MODULE_NAME + "ecs_collect_local_zone_replication_failure_data()::"
@@ -984,7 +984,7 @@ def ecs_collect_local_zone_bootstrap_data(influxclient, logger, ecsmanagmentapi,
                         db_array.append(db_json.copy())
                         influxclient.write_points(db_array)
                         logger.debug(MODULE_NAME + '::ecs_collect_local_zone_bootstrap_data()::'
-                                                    'Local Zone Failed Bootstrap data db_array is: \r\n\r\n'.join(str(db_array)))
+                                                    'Local Zone Failed Bootstrap data db_array is: \r\n\r\n' + str(db_array))
 
                     for bootstrap_rg_name in ecsdata_metrics:
                         db_array = []
@@ -1005,7 +1005,7 @@ def ecs_collect_local_zone_bootstrap_data(influxclient, logger, ecsmanagmentapi,
 
                         influxclient.write_points(db_array)
                         logger.debug(MODULE_NAME + '::ecs_collect_local_zone_bootstrap_data()::'
-                                                    'Local Zone Failed Bootstrap metrics db_array is: \r\n\r\n'.join(str(db_array)))
+                                                    'Local Zone Failed Bootstrap metrics db_array is: \r\n\r\n' + str(db_array))
 
                     for bootstrap_rg_name in ecsdata_summary:
                         db_array = []
@@ -1025,7 +1025,7 @@ def ecs_collect_local_zone_bootstrap_data(influxclient, logger, ecsmanagmentapi,
 
                         influxclient.write_points(db_array)
                         logger.debug(MODULE_NAME + '::ecs_collect_local_zone_bootstrap_data()::'
-                                                    'Local Zone Failed Bootstrap summary db_array is: \r\n\r\n'.join(str(db_array)))
+                                                    'Local Zone Failed Bootstrap summary db_array is: \r\n\r\n' + str(db_array))
 
             if controlledShutdown.kill_now:
                 print(MODULE_NAME + "ecs_collect_local_zone_bootstrap_data()::"
@@ -1141,6 +1141,7 @@ def ecs_data_collection():
         for i, j in _configuration.modules_intervals.items():
             method = str(i)
             interval = str(j)
+            print("Method: {}".format(method))
             t = ECSDataCollection(method, _influxClient, _logger, _ecsManagmentAPI, interval)
             t.start()
 
@@ -1150,7 +1151,7 @@ def ecs_data_collection():
 
 
 """
-Main 
+Main
 """
 if __name__ == "__main__":
 
@@ -1184,4 +1185,3 @@ if __name__ == "__main__":
     except Exception as e:
         print(MODULE_NAME + '__main__::The following unexpected error occured: '
               + str(e) + "\n" + traceback.format_exc())
-

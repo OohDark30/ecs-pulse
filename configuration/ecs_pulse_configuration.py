@@ -64,24 +64,25 @@ class ECSPulseConfiguration(object):
                 raise InvalidConfigurationException("The ECS API Polling Interval of " + j + " for API Call " + i +
                                                     " is not numeric.")
 
+
         # Iterate through all configured ECS connections and validate connection info
         for ecsconnection in self.ecsconnections:
             # Validate ECS Connections values
-            if not ecsconnection['protocol']:
+            if 'protocol' not in ecsconnection:
                 raise InvalidConfigurationException("The ECS Management protocol is not "
                                                     "configured in the module configuration")
-            if not ecsconnection['host']:
+            if 'host' not in ecsconnection:
                 raise InvalidConfigurationException("The ECS Management Host is not configured in the module configuration")
-            if not ecsconnection['port']:
+            if 'port' not in ecsconnection:
                 raise InvalidConfigurationException("The ECS Management port is not configured in the module configuration")
-            if not ecsconnection['user']:
+            if 'user' not in ecsconnection:
                 raise InvalidConfigurationException("The ECS Management User is not configured in the module configuration")
-            if not ecsconnection['password']:
+            if 'password' not in ecsconnection:
                 raise InvalidConfigurationException("The ECS Management Users password is not configured "
                                                     "in the module configuration")
             # Validate API query parameters
-            if not ecsconnection['dataType']:
+            if 'dataType' not in ecsconnection:
                 ecsconnection['dataType'] = "default"
 
-            if not ecsconnection['category']:
+            if 'category' not in ecsconnection:
                 ecsconnection['category'] = "default"
