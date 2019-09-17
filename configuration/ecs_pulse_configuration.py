@@ -18,7 +18,7 @@ class InvalidConfigurationException(Exception):
 
 
 class ECSPulseConfiguration(object):
-    def __init__(self, config):
+    def __init__(self, config, tempdir):
 
         if config is None:
             raise InvalidConfigurationException("No file path to the ECS Data Collection Module configuration provided")
@@ -26,6 +26,11 @@ class ECSPulseConfiguration(object):
         if not os.path.exists(config):
             raise InvalidConfigurationException("The ECS Data Collection Module configuration "
                                                 "file path does not exist: " + config)
+        if tempdir is None:
+            raise InvalidConfigurationException("No path for temporary file storage provided")
+
+        # Store temp file storage path to the configuration object
+        self.tempfilepath = tempdir
 
         # Attempt to open configuration file
         try:
@@ -43,12 +48,24 @@ class ECSPulseConfiguration(object):
         logging_level_raw = parser[BASE_CONFIG]['logging_level']
         self.logging_level = logging.getLevelName(logging_level_raw.upper())
 
-        # Grab Influx database settings:
+        # Grab Influx database settings and validate
         self.database_host = parser[DATABASE_CONNECTION_CONFIG]['host']
         self.database_port = parser[DATABASE_CONNECTION_CONFIG]['port']
         self.database_user = parser[DATABASE_CONNECTION_CONFIG]['user']
         self.database_password = parser[DATABASE_CONNECTION_CONFIG]['password']
         self.database_name = parser[DATABASE_CONNECTION_CONFIG]['databasename']
+        self.database_timeoutRetries = parser[DATABASE_CONNECTION_CONFIG]['timeoutRetries']
+        self.database_retentionPolicyName = parser[DATABASE_CONNECTION_CONFIG]['retentionPolicyName']
+        self.database_retentionPolicyDuration = parser[DATABASE_CONNECTION_CONFIG]['RetentionPolicyDuration']
+        self.database_retentionPolicyReplicationFactor = parser[DATABASE_CONNECTION_CONFIG]['RetentionPolicyReplicationFactor']
+
+        # Set default retention policy and duration if not set properly
+        if not self.database_retentionPolicyName:
+            self.database_retentionPolicyName = "ecsdashboarddataretention"
+        if not self.database_retentionPolicyDuration:
+            self.database_retentionPolicyDuration = "7d"
+        if not self.database_retentionPolicyReplicationFactor:
+            self.database_retentionPolicyReplicationFactor = "1"
 
         # Grab ECS API Polling Intervals
         self.modules_intervals = parser[ECS_API_POLLING_INTERVALS]
@@ -85,3 +102,9 @@ class ECSPulseConfiguration(object):
 
             if not ecsconnection['category']:
                 ecsconnection['category'] = "default"
+
+            if not ecsconnection['connectTimeout']:
+                ecsconnection['connectTimeout'] = "15"
+
+            if not ecsconnection['readTimeout']:
+                ecsconnection['readTimeout'] = "60"

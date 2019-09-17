@@ -9,6 +9,7 @@ from ecs.ecs import ECSManagementAPI
 from ecs.ecs import ECSUtility
 from influx.influx import InfluxUtility
 from influxdb import InfluxDBClient
+import errno
 import datetime
 import os
 import traceback
@@ -16,6 +17,7 @@ import signal
 import time
 import logging
 import threading
+import xml.etree.ElementTree as ET
 
 # Constants
 MODULE_NAME = "ECS_Data_Collection_Module"                  # Module Name
@@ -52,13 +54,14 @@ class ECSDataCollectionShutdown:
 
 
 class ECSDataCollection (threading.Thread):
-    def __init__(self, method, influxclient, logger, ecsmanagmentapi, pollinginterval):
+    def __init__(self, method, influxclient, logger, ecsmanagmentapi, pollinginterval, tempdir):
         threading.Thread.__init__(self)
         self.method = method
         self.influxclient = influxclient
         self.logger = logger
         self.ecsmanagmentapi = ecsmanagmentapi
         self.pollinginterval = pollinginterval
+        self.tempdir = tempdir
 
         logger.info(MODULE_NAME + '::ECSDataCollection()::init method of class called')
 
@@ -87,21 +90,38 @@ class ECSDataCollection (threading.Thread):
                                     if self.method == 'ecs_collect_local_zone_bootstrap_data()':
                                         ecs_collect_local_zone_bootstrap_data(self.influxclient, self.logger, self.ecsmanagmentapi, self.pollinginterval)
                                     else:
-                                        self.logger.info(MODULE_NAME + '::ECSDataCollection()::Requested method '
-                                                         + self.method + ' is not supported.')
+                                        if self.method == 'ecs_collect_namespace_billing_data()':
+                                            ecs_collect_namespace_billing_data(self.influxclient, self.logger, self.ecsmanagmentapi, self.pollinginterval, self.tempdir)
+                                        else:
+                                            self.logger.info(MODULE_NAME + '::ECSDataCollection()::Requested method ' +
+                                                             self.method + ' is not supported.')
         except Exception as e:
             _logger.error(MODULE_NAME + 'ECSDataCollection::run()::The following unexpected '
                                         'exception occured: ' + str(e) + "\n" + traceback.format_exc())
 
 
-def ecs_config(config, vdc_config):
+def ecs_delete_file(file_to_delete):
+    global _logger
+
+    try:
+        # Load and validate module configuration
+        os.remove(file_to_delete)
+
+        _logger.debug(MODULE_NAME + '::ecs_delete_file()::Successfully deleted file ' + file_to_delete + '.')
+    except OSError as e:
+        if e.errno != errno.ENOENT:
+            _logger.error(MODULE_NAME + '::ecs_delete_file()::The following unexpected '
+                                        'exception occured: ' + str(e) + "\n" + traceback.format_exc())
+
+
+def ecs_config(config, vdc_config, temp_dir):
     global _configuration
     global _logger
     global _ecsAuthentication
     global _ecsVDCLookup
     try:
         # Load and validate module configuration
-        _configuration = ECSPulseConfiguration(config)
+        _configuration = ECSPulseConfiguration(config, temp_dir)
 
         # Load ECS VDC Lookup
         _ecsVDCLookup = ECSUtility(_ecsAuthentication, _logger, vdc_config)
@@ -268,7 +288,7 @@ def ecs_collect_local_zone_data(influxclient, logger, ecsmanagmentapi, pollingin
                     # Process remaining data in JSON
                     for field in local_zone_data:
                         # Process individual data field
-                        if type(local_zone_data[field]) is unicode:
+                        if type(local_zone_data[field]) is str:
                             try:
                                 logger.debug(MODULE_NAME + '::ecs_collect_local_zone_data()::'
                                                            'field from local_zone_data being processed is: ' + field)
@@ -398,7 +418,7 @@ def ecs_collect_local_zone_node_data(influxclient, logger, ecsmanagmentapi, poll
                         ecsdata_summary[node_display_name] = {}
 
                         for field in local_zone_node_data:
-                            if type(local_zone_node_data[field]) is unicode:
+                            if type(local_zone_node_data[field]) is str:
                                 try:
                                     logger.debug(MODULE_NAME + '::ecs_collect_local_zone_node_data()::field from '
                                                                'local_zone_node_data being processed is: ' + field)
@@ -537,7 +557,7 @@ def ecs_collect_local_zone_disk_data(influxclient, logger, ecsmanagmentapi, poll
                     ecsdata_summary[disk_display_name] = {}
 
                     for field in local_zone_disk_data:
-                        if type(local_zone_disk_data[field]) is unicode:
+                        if type(local_zone_disk_data[field]) is str:
                             try:
                                 logger.debug(MODULE_NAME + '::ecs_collect_local_zone_disk_data()::field from '
                                                             'local_zone_disk_data being processed is: ' + field)
@@ -668,7 +688,7 @@ def ecs_collect_local_zone_replication_data(influxclient, logger, ecsmanagmentap
                     ecsdata_summary[node_name] = {}
 
                     for field in local_zone_replication_data:
-                        if type(local_zone_replication_data[field]) is unicode:
+                        if type(local_zone_replication_data[field]) is str:
                             try:
                                 logger.debug(MODULE_NAME + '::ecs_collect_local_zone_replication_data()::field from '
                                                             'local_zone_replication_data being processed is: ' + field)
@@ -807,7 +827,7 @@ def ecs_collect_local_zone_replication_failure_data(influxclient, logger, ecsman
                         ecsdata_summary[failed_rg_name] = {}
 
                         for field in local_zone_failed_failed_replication_link_data:
-                            if type(local_zone_failed_failed_replication_link_data[field]) is unicode:
+                            if type(local_zone_failed_failed_replication_link_data[field]) is str:
                                 try:
                                     logger.debug(MODULE_NAME + '::ecs_collect_local_zone_replication_failure_data()::field from '
                                                                 'local_zone_failed_failed_replication_link_data being processed is: ' + field)
@@ -948,7 +968,7 @@ def ecs_collect_local_zone_bootstrap_data(influxclient, logger, ecsmanagmentapi,
                         ecsdata_summary[bootstrap_rg_name] = {}
 
                         for field in local_zone_bootstrap_data:
-                            if type(local_zone_bootstrap_data[field]) is unicode:
+                            if type(local_zone_bootstrap_data[field]) is str:
                                 try:
                                     logger.debug(MODULE_NAME + '::ecs_collect_local_zone_bootstrap_data()::field from '
                                                                 'local_zone_bootstrap_data being processed is: ' + field)
@@ -1039,6 +1059,172 @@ def ecs_collect_local_zone_bootstrap_data(influxclient, logger, ecsmanagmentapi,
                                     'exception occured: ' + str(e) + "\n" + traceback.format_exc())
 
 
+def ecs_collect_namespace_billing_data(influxclient, logger, ecsmanagmentapi, pollinginterval, tempdir):
+
+    try:
+        # Start polling loop
+        while True:
+            # Perform API call against each configured ECS
+            for ecsconnection in ecsmanagmentapi:
+
+                # Retrieve the list of namespaces
+                namespace_data = ecsconnection.get_namespace_data()
+
+                if namespace_data is None:
+                    logger.info(MODULE_NAME + '::ecs_collect_namespace_billing_data()::'
+                                              'Unable to retrieve ECS Namespace Information')
+                    return
+                else:
+                    # For each namespace in the collection get billing retrieve billing information
+                    if namespace_data is None:
+                        logger.info(MODULE_NAME + '::ecs_collect_namespace_billing_data()::'
+                                                  'Unable to retrieve ECS Namespace Information')
+                        return
+                    else:
+                        # Lets set a timestamp that we can use for all data points written during this cycle
+                        current_time = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S")
+
+                        # Grab the namespace list and cycle thru it
+                        if type(namespace_data['namespace']) is list:
+                            # Process list of namespaces
+                            logger.debug(MODULE_NAME + '::ecs_collect_namespace_billing_data()::'
+                                                       'We have the list of namespaces')
+
+                            # For each namespace grab needed info and then grab all the buckets for that namespace
+                            for namespace in namespace_data['namespace']:
+                                ns_name = namespace['name']
+                                ns_id = namespace['id']
+                                ns_link = namespace['link']
+                                ns_object_count = 0
+                                ns_used_capacity = 0.00
+
+                                # Retrieve the list of buckets for the namespace
+                                bucket_data = ecsconnection.get_bucket_data(ns_name)
+
+                                if bucket_data is None:
+                                    logger.info(MODULE_NAME + '::ecs_collect_namespace_billing_data()::'
+                                                              'Unable to retrieve the list of buckets for namespace ' + ns_name)
+                                    return
+                                else:
+                                    # We've got some data bucket data lets
+                                    # check if we have some buckets for this namespace to process
+
+                                    for bucket in bucket_data['object_bucket']:
+                                        bucket_name = bucket['name']
+                                        bucket_object_count = 0
+                                        bucket_used_capacity = 0.00
+
+                                        # We have a namespace and a bucket lets go and retrieve the metering information
+                                        billing_data_file = ecsconnection.get_namespace_billing_data(ns_name, bucket_name, tempdir)
+
+                                        if billing_data_file is None:
+                                            logger.info(MODULE_NAME + '::ecs_collect_namespace_billing_data()::'
+                                                                      'Unable to retrieve Metering information for ' + ns_id )
+                                            return
+                                        else:
+                                            # We have a metering file for the bucket and namespace so lets
+                                            # parse it and create an InfluxDB datapoint
+                                            try:
+                                                tree = ET.parse(billing_data_file)
+                                                billing_info = tree.getroot()
+
+                                                # Grab VDC Name
+                                                vdc = _ecsVDCLookup.vdc_json[ecsconnection.authentication.host]
+                                                managementIp = ecsconnection.authentication.host
+
+                                                vpool_id = billing_info.find('vpool_id').text
+                                                total_size = billing_info.find('total_size').text
+                                                total_size_unit = billing_info.find('total_size_unit').text
+                                                total_objects = billing_info.find('total_objects').text
+                                                sample_time = billing_info.find('sample_time').text
+                                                total_mpu_size = billing_info.find('total_mpu_size').text
+                                                total_mpu_parts = billing_info.find('total_mpu_parts').text
+
+                                                # No need to close the file as the ET parse()
+                                                # method will close it when parsing is completed.
+
+                                                _logger.debug(MODULE_NAME + '::ecs_collect_namespace_billing_data::Deleting temporary '
+                                                                            'xml file: ' + billing_data_file)
+
+                                                # We have parsed our metering file for the current bucket now lets create a data point
+                                                current_epoch_time = time.time()
+                                                db_array = []
+                                                ecsdata = {}
+                                                fields = {}
+                                                tags = {}
+                                                target_name = "metering_stats"
+
+                                                # Setup measurement tags.
+                                                tags['vdc'] = _ecsVDCLookup.vdc_json[ecsconnection.authentication.host]
+                                                tags['namespace'] = ns_name
+                                                tags['bucket'] = bucket_name
+                                                tags['virtual_pool_id'] = vpool_id
+
+                                                # We always grab capacity data in KB and we want to convert it to bytes
+                                                total_size_f = float(total_size)
+                                                total_size_bytes = total_size_f  * 1024
+
+                                                # Load dictionary of values
+                                                ecsdata[bucket_name] = {}
+                                                try:
+                                                    ecsdata[bucket_name]['total_size'] = float(total_size_bytes)
+                                                except Exception as ex1:
+                                                    try:
+                                                        # We're here because trying to convert to a float failed.
+                                                        ecsdata[bucket_name]['total_size'] = total_size_bytes
+                                                    except Exception as ex2:
+                                                        pass
+
+                                                try:
+                                                    ecsdata[bucket_name]['total_objects'] = float(total_objects)
+                                                except Exception as ex2:
+                                                    try:
+                                                        # We're here because trying to convert to a float failed.
+                                                        ecsdata[bucket_name]['total_objects'] = total_objects
+                                                    except Exception as ex2:
+                                                        pass
+
+                                                # Create Influx DB Info Dictionary for our string fields and add it to the db list
+                                                db_json = {
+                                                    "measurement": target_name,
+                                                    "tags": tags,
+                                                    "fields": ecsdata[bucket_name],
+                                                    "time": current_time
+                                                }
+                                                db_array.append(db_json.copy())
+
+                                                # Write data to Influx
+                                                influxclient.write_points(db_array)
+
+                                                # Dump array for debug
+                                                logger.debug(MODULE_NAME + '::ecs_collect_namespace_billing_data()::'
+                                                                           'Billing db_array is: \r\n\r\n'.join(str(db_array)))
+
+                                                # Delete temp file
+                                                ecs_delete_file(billing_data_file)
+
+                                            except Exception as ex:
+                                                logger.error(MODULE_NAME + '::ecs_collect_namespace_billing_data()::The following unexpected '
+                                                                           'exception occurred: ' + str(ex) + "\n" + traceback.format_exc())
+                        else:
+                            # We should have found the namespace list in the dictionary.  We have an issue
+                            logger.info(MODULE_NAME + '::ecs_collect_namespace_billing_data()::'
+                                                      'Unable to retrieve the list of namespaces '
+                                                      'from the namespace data dictionary.')
+                            return
+
+
+            if controlledShutdown.kill_now:
+                print(MODULE_NAME + "ecs_collect_namespace_billing_data()::Shutdown detected.  Terminating polling.")
+                break
+
+            # Wait for specific polling interval
+            time.sleep(float(pollinginterval))
+    except Exception as e:
+        _logger.error(MODULE_NAME + '::ecs_collect_namespace_billing_data()::The following unexpected '
+                                    'exception occured: ' + str(e) + "\n" + traceback.format_exc())
+
+
 def ecs_authenticate():
     global _ecsAuthentication
     global _configuration
@@ -1057,6 +1243,7 @@ def ecs_authenticate():
             # Attempt to authenticate
             auth = ECSAuthentication(ecsconnection['protocol'], ecsconnection['host'], ecsconnection['user'],
                                      ecsconnection['password'], ecsconnection['port'], _logger)
+
             auth.connect()
 
             # Check to see if we have a token returned
@@ -1069,7 +1256,8 @@ def ecs_authenticate():
                 _ecsAuthentication.append(auth)
 
                 # Instantiate ECS Management API object, and it to our list, and validate that we are authenticated
-                _ecsManagmentAPI.append(ECSManagementAPI(auth, _logger))
+                _ecsManagmentAPI.append(ECSManagementAPI(auth, ecsconnection['connectTimeout'],
+                                                         ecsconnection['readTimeout'], _logger))
                 if not _ecsAuthentication:
                     _logger.info(MODULE_NAME + '::ecs_authenticate()::ECS Data Collection '
                                                'Module is not ready.  Please check logs.')
@@ -1099,12 +1287,32 @@ def influx_init():
         db_utility = InfluxUtility(_configuration, _logger)
         database_found = db_utility.check_db_exists(_configuration.database_name)
 
-        # If database is not found then connect with no database, create the database, and then switch to it
+        # If database is not found then connect with no database, create the database,
+        # add a retention policy, and then switch to it
         if not database_found:
+            # Create a client connection to the Influx Server
             influx_client = InfluxDBClient(_configuration.database_host, _configuration.database_port,
                                            _configuration.database_user, _configuration.database_password, None)
+
+            # Create the database and switch to it
             influx_client.create_database(_configuration.database_name)
             influx_client.switch_database(_configuration.database_name)
+
+            # Drop autogen retention policy
+            influx_client.drop_retention_policy('autogen', database=_configuration.database_name)
+
+            # Create and assign default retention policy
+            influx_client.create_retention_policy(_configuration.database_retentionPolicyName,
+                                                  _configuration.database_retentionPolicyDuration,
+                                                  _configuration.database_retentionPolicyReplicationFactor,
+                                                  database=_configuration.database_name, default=True)
+
+            # Create default retention policy
+            influx_client.create_retention_policy(_configuration.database_retentionPolicyName,
+                                                  _configuration.database_retentionPolicyDuration,
+                                                  _configuration.database_retentionPolicyReplicationFactor,
+                                                  database=_configuration.database_name, default=True)
+
         else:
             # Connect to influx with existing database
             influx_client = InfluxDBClient(_configuration.database_host, _configuration.database_port, _configuration.database_user, _configuration.database_password,_configuration.database_name)
@@ -1141,7 +1349,7 @@ def ecs_data_collection():
         for i, j in _configuration.modules_intervals.items():
             method = str(i)
             interval = str(j)
-            t = ECSDataCollection(method, _influxClient, _logger, _ecsManagmentAPI, interval)
+            t = ECSDataCollection(method, _influxClient, _logger, _ecsManagmentAPI, interval, _configuration.tempfilepath)
             t.start()
 
     except Exception as e:
@@ -1162,12 +1370,23 @@ if __name__ == "__main__":
         currentApplicationDirectory = os.getcwd()
         configFilePath = os.path.abspath(os.path.join(currentApplicationDirectory, "configuration", CONFIG_FILE))
         vdcLookupFilePath = os.path.abspath(os.path.join(currentApplicationDirectory, "configuration", VDC_LOOKUP_FILE))
+        tempFilePath = os.path.abspath(os.path.join(currentApplicationDirectory, "temp"))
+
+        # Create temp diretory if it doesn't already exists
+        if not os.path.isdir(tempFilePath):
+            os.mkdir(tempFilePath)
+        else:
+            # The directory exists so lets scrub any temp XML files out that may be in there
+            files = os.listdir(tempFilePath)
+            for file in files:
+                if file.endswith(".xml"):
+                    os.remove(os.path.join(currentApplicationDirectory, "temp", file))
 
         print(MODULE_NAME + "::__main__::Current directory is : " + currentApplicationDirectory)
         print(MODULE_NAME + "::__main__::Configuration file path is: " + configFilePath)
 
         # Initialize configuration and VDC Lookup
-        ecs_config(configFilePath, vdcLookupFilePath)
+        ecs_config(configFilePath, vdcLookupFilePath, tempFilePath)
 
         # Initialize connection(s) to ECS
         if ecs_authenticate():

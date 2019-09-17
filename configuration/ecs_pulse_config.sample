@@ -33,6 +33,7 @@
     "ecs_collect_local_zone_bootstrap_data()": "30",
     "ecs_collect_capacity_data()": "30",
     "ecs_collect_local_zone_node_data()": "30",
-    "ecs_collect_local_zone_disk_data()": "30"
+    "ecs_collect_local_zone_disk_data()": "30",
+    "ecs_collect_namespace_billing_data()": "90"
   }
 }
