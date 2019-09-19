@@ -166,7 +166,7 @@ def ecs_collect_capacity_data(influxclient, logger, ecsmanagmentapi, pollinginte
                     target_name = "Capacity"
 
                     # Grab VDC Name
-                    tags['VDC'] = _ecsVDCLookup.vdc_json[ecsconnection.authentication.host]
+                    tags['vdc'] = _ecsVDCLookup.vdc_json[ecsconnection.authentication.host]
 
                     # Process remaining data in JSON
                     for field in capacity_data:
@@ -274,7 +274,7 @@ def ecs_collect_local_zone_data(influxclient, logger, ecsmanagmentapi, pollingin
                     ecsdata_summary = {}
                     fields = {}
                     tags = {}
-                    target_name = "LocalZone"
+                    target_name = "dashboard_local_zone"
 
                     # Remove data points from raw json we are not interested in
                     local_zone_data.pop('_links', None)
@@ -283,7 +283,7 @@ def ecs_collect_local_zone_data(influxclient, logger, ecsmanagmentapi, pollingin
                     local_zone_data.pop('transactionErrorsCurrent', None)
 
                     # Grab VDC Name
-                    tags['VDC'] = _ecsVDCLookup.vdc_json[ecsconnection.authentication.host]
+                    tags['vdc'] = _ecsVDCLookup.vdc_json[ecsconnection.authentication.host]
 
                     # Process remaining data in JSON
                     for field in local_zone_data:
@@ -327,10 +327,10 @@ def ecs_collect_local_zone_data(influxclient, logger, ecsmanagmentapi, pollingin
                         influxdb_time = influxdb_time.strftime("%Y-%m-%dT%H:%M:%S")
 
                         db_json = {
-                            "measurement": target_name+"Metrics",
+                            "measurement": target_name+"_metrics",
                             "tags": tags,
                             "fields": ecsdata_metrics[times],
-                            "time": influxdb_time
+                            "time": current_time
                         }
                         db_array.append(db_json.copy())
 
@@ -340,10 +340,10 @@ def ecs_collect_local_zone_data(influxclient, logger, ecsmanagmentapi, pollingin
                         influxdb_time = influxdb_time.strftime("%Y-%m-%dT%H:%M:%S")
 
                         db_json = {
-                            "measurement": target_name+"Summary",
+                            "measurement": target_name+"_summary",
                             "tags": tags,
                             "fields": ecsdata_summary[times],
-                            "time": influxdb_time
+                            "time": current_time
                         }
                         db_array.append(db_json.copy())
 
@@ -398,7 +398,7 @@ def ecs_collect_local_zone_node_data(influxclient, logger, ecsmanagmentapi, poll
                     tags = {}
                     target_name = "LocalZoneNodes"
 
-                    tags['VDC'] = _ecsVDCLookup.vdc_json[ecsconnection.authentication.host]
+                    tags['vdc'] = _ecsVDCLookup.vdc_json[ecsconnection.authentication.host]
 
                     # Grab just node information
                     zone_node_data = local_zone_node_data['_embedded']['_instances']
@@ -540,7 +540,7 @@ def ecs_collect_local_zone_disk_data(influxclient, logger, ecsmanagmentapi, poll
                 tags = {}
                 target_name = "LocalZoneDisks"
 
-                tags['VDC'] = _ecsVDCLookup.vdc_json[ecsconnection.authentication.host]
+                tags['vdc'] = _ecsVDCLookup.vdc_json[ecsconnection.authentication.host]
 
                 # Grab just node information
                 zone_disk_data = local_zone_disk_data['_embedded']['_instances']
@@ -671,7 +671,7 @@ def ecs_collect_local_zone_replication_data(influxclient, logger, ecsmanagmentap
                 tags = {}
                 target_name = "LocalZoneReplication"
 
-                tags['VDC'] = _ecsVDCLookup.vdc_json[ecsconnection.authentication.host]
+                tags['vdc'] = _ecsVDCLookup.vdc_json[ecsconnection.authentication.host]
 
                 # Grab just node information
                 replication_data = local_zone_replication_data['_embedded']['_instances']
@@ -809,7 +809,7 @@ def ecs_collect_local_zone_replication_failure_data(influxclient, logger, ecsman
                     tags = {}
                     target_name = "LocalZoneReplicationFailure"
 
-                    tags['VDC'] = _ecsVDCLookup.vdc_json[ecsconnection.authentication.host]
+                    tags['vdc'] = _ecsVDCLookup.vdc_json[ecsconnection.authentication.host]
 
                     # Grab just node information
                     failed_replication_link_data = local_zone_failed_failed_replication_link_data['_embedded']['_instances']
@@ -951,7 +951,7 @@ def ecs_collect_local_zone_bootstrap_data(influxclient, logger, ecsmanagmentapi,
                     tags = {}
                     target_name = "LocalZoneReplicationBootstrap"
 
-                    tags['VDC'] = _ecsVDCLookup.vdc_json[ecsconnection.authentication.host]
+                    tags['vdc'] = _ecsVDCLookup.vdc_json[ecsconnection.authentication.host]
 
                     # Grab just node information
                     replication_link_bootstrap_data = local_zone_bootstrap_data['_embedded']['_instances']
@@ -1162,7 +1162,7 @@ def ecs_collect_namespace_billing_data(influxclient, logger, ecsmanagmentapi, po
 
                                                 # We always grab capacity data in KB and we want to convert it to bytes
                                                 total_size_f = float(total_size)
-                                                total_size_bytes = total_size_f  * 1024
+                                                total_size_bytes = total_size_f * 1024
 
                                                 # Load dictionary of values
                                                 ecsdata[bucket_name] = {}

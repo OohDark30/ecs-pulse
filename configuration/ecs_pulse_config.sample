@@ -9,7 +9,10 @@
     "port": "4443",
     "user": "root",
     "password": "",
-    "datafilter": "default"
+    "dataType": "default",
+    "category":"default",
+    "connectTimeout": "15",
+    "readTimeout": "60"
   }
   {
     "protocol": "https",
@@ -17,7 +20,10 @@
     "port": "4443",
     "user": "root",
     "password": "",
-    "datafilter": "default"
+    "dataType": "default",
+    "category":"default",
+    "connectTimeout": "15",
+    "readTimeout": "60"
   }],
   "INFLUX_DATABASE_CONNECTION": {
     "host": "xx.xx.xx.xx",
@@ -25,6 +31,10 @@
     "user": "root",
     "password": "root",
     "databasename": "ecsdatacollection"
+    "timeoutRetries": "3",
+    "retentionPolicyName": "default",
+    "RetentionPolicyDuration": "7d",
+    "RetentionPolicyReplicationFactor": "1"
   },
   "ECS_API_POLLING_INTERVALS": {
     "ecs_collect_local_zone_data()": "30",
