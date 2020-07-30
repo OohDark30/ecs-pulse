@@ -30,7 +30,7 @@
     "port": "8086",
     "user": "root",
     "password": "root",
-    "databasename": "ecsdatacollection"
+    "databasename": "ecsdatacollection",
     "timeoutRetries": "3",
     "retentionPolicyName": "default",
     "RetentionPolicyDuration": "7d",

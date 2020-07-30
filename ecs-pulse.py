@@ -1111,6 +1111,9 @@ def ecs_collect_namespace_billing_data(influxclient, logger, ecsmanagmentapi, po
 
                                     for bucket in bucket_data['object_bucket']:
                                         bucket_name = bucket['name']
+                                        soft_quota = bucket['softquota']
+                                        block_size = bucket['block_size']
+                                        notification_size = bucket['notification_size']
                                         bucket_object_count = 0
                                         bucket_used_capacity = 0.00
 
@@ -1158,11 +1161,21 @@ def ecs_collect_namespace_billing_data(influxclient, logger, ecsmanagmentapi, po
                                                 tags['vdc'] = _ecsVDCLookup.vdc_json[ecsconnection.authentication.host]
                                                 tags['namespace'] = ns_name
                                                 tags['bucket'] = bucket_name
-                                                tags['virtual_pool_id'] = vpool_id
+                                                #tags['virtual_pool_id'] = vpool_id
 
                                                 # We always grab capacity data in KB and we want to convert it to bytes
                                                 total_size_f = float(total_size)
                                                 total_size_bytes = total_size_f * 1024
+
+                                                # Calculate average object size if objects and size are greater than zero
+                                                total_objects_f = float(total_objects)
+                                                if total_objects_f > 0:
+                                                    if total_size_f > 0:
+                                                        average_object_size_f = total_objects_f / total_size_bytes
+                                                    else:
+                                                        average_object_size_f = 0.0
+                                                else:
+                                                    average_object_size_f = 0.0
 
                                                 # Load dictionary of values
                                                 ecsdata[bucket_name] = {}
@@ -1177,11 +1190,47 @@ def ecs_collect_namespace_billing_data(influxclient, logger, ecsmanagmentapi, po
 
                                                 try:
                                                     ecsdata[bucket_name]['total_objects'] = float(total_objects)
-                                                except Exception as ex2:
+                                                except Exception as ex3:
                                                     try:
                                                         # We're here because trying to convert to a float failed.
                                                         ecsdata[bucket_name]['total_objects'] = total_objects
-                                                    except Exception as ex2:
+                                                    except Exception as ex4:
+                                                        pass
+
+                                                try:
+                                                    ecsdata[bucket_name]['soft_quota'] = float(soft_quota)
+                                                except Exception as ex5:
+                                                    try:
+                                                        # We're here because trying to convert to a float failed.
+                                                        ecsdata[bucket_name]['soft_quota'] = soft_quota
+                                                    except Exception as ex6:
+                                                        pass
+
+                                                try:
+                                                    ecsdata[bucket_name]['block_size'] = float(block_size)
+                                                except Exception as ex7:
+                                                    try:
+                                                        # We're here because trying to convert to a float failed.
+                                                        ecsdata[bucket_name]['block_size'] = block_size
+                                                    except Exception as ex8:
+                                                        pass
+
+                                                try:
+                                                    ecsdata[bucket_name]['notification_size'] = float(notification_size)
+                                                except Exception as ex7:
+                                                    try:
+                                                        # We're here because trying to convert to a float failed.
+                                                        ecsdata[bucket_name]['notification_size'] = notification_size
+                                                    except Exception as ex8:
+                                                        pass
+
+                                                try:
+                                                    ecsdata[bucket_name]['average_size'] = float(average_object_size_f)
+                                                except Exception as ex7:
+                                                    try:
+                                                        # We're here because trying to convert to a float failed.
+                                                        ecsdata[bucket_name]['average_size'] = average_object_size_f
+                                                    except Exception as ex8:
                                                         pass
 
                                                 # Create Influx DB Info Dictionary for our string fields and add it to the db list
@@ -1255,7 +1304,7 @@ def ecs_authenticate():
             else:
                 _ecsAuthentication.append(auth)
 
-                # Instantiate ECS Management API object, and it to our list, and validate that we are authenticated
+                # Instantiate ECS Management API object, add it to our list, and validate that we are authenticated
                 _ecsManagmentAPI.append(ECSManagementAPI(auth, ecsconnection['connectTimeout'],
                                                          ecsconnection['readTimeout'], _logger))
                 if not _ecsAuthentication:
