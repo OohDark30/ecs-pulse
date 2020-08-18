@@ -1165,13 +1165,13 @@ def ecs_collect_namespace_billing_data(influxclient, logger, ecsmanagmentapi, po
 
                                                 # We always grab capacity data in KB and we want to convert it to bytes
                                                 total_size_f = float(total_size)
-                                                total_size_bytes = total_size_f * 1024
+                                                total_size_bytes = total_size_f * 1024.00
 
                                                 # Calculate average object size if objects and size are greater than zero
                                                 total_objects_f = float(total_objects)
                                                 if total_objects_f > 0:
                                                     if total_size_f > 0:
-                                                        average_object_size_f = total_objects_f / total_size_bytes
+                                                        average_object_size_f = total_size_bytes / total_objects_f
                                                     else:
                                                         average_object_size_f = 0.0
                                                 else:
