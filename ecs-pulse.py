@@ -53,7 +53,7 @@ class ECSDataCollectionShutdown:
         self.kill_now = True
 
 
-class ECSDataCollection (threading.Thread):
+class ECSDataCollection(threading.Thread):
     def __init__(self, method, influxclient, logger, ecsmanagmentapi, pollinginterval, tempdir):
         threading.Thread.__init__(self)
         self.method = method
@@ -98,6 +98,17 @@ class ECSDataCollection (threading.Thread):
         except Exception as e:
             _logger.error(MODULE_NAME + 'ECSDataCollection::run()::The following unexpected '
                                         'exception occured: ' + str(e) + "\n" + traceback.format_exc())
+
+
+def ecs_check_for_integer(var_to_check):
+    global _logger
+
+    try:
+        # Try and convert variable to integer
+        int(var_to_check)
+        return True
+    except ValueError:
+        return False
 
 
 def ecs_delete_file(file_to_delete):
@@ -1094,9 +1105,40 @@ def ecs_collect_namespace_billing_data(influxclient, logger, ecsmanagmentapi, po
                             for namespace in namespace_data['namespace']:
                                 ns_name = namespace['name']
                                 ns_id = namespace['id']
-                                ns_link = namespace['link']
-                                ns_object_count = 0
-                                ns_used_capacity = 0.00
+                                ns_block_size = namespace['blockSize']
+                                ns_notification_size = namespace['notificationSize']
+                                ns_total_size_f = 0.0
+                                ns_total_objects_f = 0.0
+                                ns_total_size_bytes = 0.0
+                                ns_total_protected_size_bytes = 0.0
+
+                                if ecs_check_for_integer(ns_block_size):
+                                    ns_block_size_int = int(ns_block_size)
+                                    if ns_block_size_int > 0:
+                                        ns_block_size_bytes = float(ns_block_size) * 1073741824
+                                    else:
+                                        ns_block_size_bytes = 0
+                                        ns_block_size = 0
+                                else:
+                                    ns_block_size_bytes = 0
+                                    ns_block_size = 0
+
+                                if ecs_check_for_integer(ns_notification_size):
+                                    ns_notification_size_int = int(ns_notification_size)
+                                    if ns_notification_size_int > 0:
+                                        ns_notification_size_bytes = float(ns_notification_size) * 1073741824
+                                    else:
+                                        ns_notification_size_bytes = 0
+                                        ns_notification_size = 0
+                                else:
+                                    ns_notification_size_bytes = 0
+                                    ns_notification_size = 0
+
+                                db_array_ns = []
+                                ecsdata_ns = {}
+                                fields_ns = {}
+                                tags_ns = {}
+                                target_name_ns = "metering_stats_namespace"
 
                                 # Retrieve the list of buckets for the namespace
                                 bucket_data = ecsconnection.get_bucket_data(ns_name)
@@ -1114,10 +1156,40 @@ def ecs_collect_namespace_billing_data(influxclient, logger, ecsmanagmentapi, po
                                         soft_quota = bucket['softquota']
                                         block_size = bucket['block_size']
                                         notification_size = bucket['notification_size']
-                                        bucket_object_count = 0
-                                        bucket_used_capacity = 0.00
 
-                                        # We have a namespace and a bucket lets go and retrieve the metering information
+                                        # Lets calculate quota sizes in bytes if provided -
+                                        # Quota Values are always set in GiB on ECS but we want them in bytes
+                                        if ecs_check_for_integer(soft_quota):
+                                            soft_quota_int = int(soft_quota)
+                                            if soft_quota_int > 0:
+                                                soft_quota_size_bytes = float(soft_quota) * 1073741824
+                                            else:
+                                                soft_quota_size_bytes = 0
+                                                soft_quota = 0
+                                        else:
+                                            soft_quota_size_bytes = 0
+                                            soft_quota = 0
+
+                                        if ecs_check_for_integer(block_size):
+                                            block_size_int = int(block_size)
+                                            if block_size_int > 0:
+                                                block_size_bytes = float(block_size) * 1073741824
+                                            else:
+                                                block_size_bytes = 0
+                                                block_size = 0
+                                        else:
+                                            block_size_bytes = 0
+                                            block_size = 0
+
+                                        if ecs_check_for_integer(notification_size):
+                                            notification_size_int = int(notification_size)
+                                            if notification_size_int < 0:
+                                                notification_size = 0
+                                        else:
+                                            notification_size = 0
+
+                                        # We have a namespace and a bucket lets go
+                                        # and retrieve the metering information
                                         billing_data_file = ecsconnection.get_namespace_billing_data(ns_name, bucket_name, tempdir)
 
                                         if billing_data_file is None:
@@ -1137,19 +1209,15 @@ def ecs_collect_namespace_billing_data(influxclient, logger, ecsmanagmentapi, po
 
                                                 vpool_id = billing_info.find('vpool_id').text
                                                 total_size = billing_info.find('total_size').text
-                                                total_size_unit = billing_info.find('total_size_unit').text
                                                 total_objects = billing_info.find('total_objects').text
-                                                sample_time = billing_info.find('sample_time').text
-                                                total_mpu_size = billing_info.find('total_mpu_size').text
-                                                total_mpu_parts = billing_info.find('total_mpu_parts').text
 
                                                 # No need to close the file as the ET parse()
                                                 # method will close it when parsing is completed.
-
                                                 _logger.debug(MODULE_NAME + '::ecs_collect_namespace_billing_data::Deleting temporary '
                                                                             'xml file: ' + billing_data_file)
 
-                                                # We have parsed our metering file for the current bucket now lets create a data point
+                                                # We have parsed our metering file for
+                                                # the current bucket now lets create a data point
                                                 current_epoch_time = time.time()
                                                 db_array = []
                                                 ecsdata = {}
@@ -1161,13 +1229,15 @@ def ecs_collect_namespace_billing_data(influxclient, logger, ecsmanagmentapi, po
                                                 tags['vdc'] = _ecsVDCLookup.vdc_json[ecsconnection.authentication.host]
                                                 tags['namespace'] = ns_name
                                                 tags['bucket'] = bucket_name
-                                                #tags['virtual_pool_id'] = vpool_id
+                                                # tags['virtual_pool_id'] = vpool_id
 
                                                 # We always grab capacity data in KB and we want to convert it to bytes
                                                 total_size_f = float(total_size)
                                                 total_size_bytes = total_size_f * 1024.00
+                                                total_protected_size_bytes = total_size_bytes * 1.33
 
-                                                # Calculate average object size if objects and size are greater than zero
+                                                # Calculate average object sizes if
+                                                # objects and size are greater than zero
                                                 total_objects_f = float(total_objects)
                                                 if total_objects_f > 0:
                                                     if total_size_f > 0:
@@ -1176,6 +1246,36 @@ def ecs_collect_namespace_billing_data(influxclient, logger, ecsmanagmentapi, po
                                                         average_object_size_f = 0.0
                                                 else:
                                                     average_object_size_f = 0.0
+
+                                                # If we have hard and / or soft quotas
+                                                # lets calculate quota utilization %
+                                                if soft_quota_size_bytes > 0:
+                                                    if total_size_bytes > 0:
+                                                        soft_quota_utilization = total_size_bytes / soft_quota_size_bytes
+                                                        soft_quota_utilization_protected = total_protected_size_bytes / soft_quota_size_bytes
+                                                    else:
+                                                        soft_quota_utilization = 0
+                                                        soft_quota_utilization_protected = 0
+                                                else:
+                                                    soft_quota_utilization = 0
+                                                    soft_quota_utilization_protected = 0
+
+                                                if block_size_bytes > 0:
+                                                    if total_size_bytes > 0:
+                                                        hard_quota_utilization = total_size_bytes / block_size_bytes
+                                                        hard_quota_utilization_protected = total_protected_size_bytes / block_size_bytes
+                                                    else:
+                                                        hard_quota_utilization = 0
+                                                        hard_quota_utilization_protected = 0
+                                                else:
+                                                    hard_quota_utilization = 0
+                                                    hard_quota_utilization_protected = 0
+
+                                                # Add bucket level details to namespace totals
+                                                ns_total_size_f += total_size_f
+                                                ns_total_objects_f += total_objects_f
+                                                ns_total_size_bytes += total_size_bytes
+                                                ns_total_protected_size_bytes += total_protected_size_bytes
 
                                                 # Load dictionary of values
                                                 ecsdata[bucket_name] = {}
@@ -1207,11 +1307,11 @@ def ecs_collect_namespace_billing_data(influxclient, logger, ecsmanagmentapi, po
                                                         pass
 
                                                 try:
-                                                    ecsdata[bucket_name]['block_size'] = float(block_size)
+                                                    ecsdata[bucket_name]['hard_quota'] = float(block_size)
                                                 except Exception as ex7:
                                                     try:
                                                         # We're here because trying to convert to a float failed.
-                                                        ecsdata[bucket_name]['block_size'] = block_size
+                                                        ecsdata[bucket_name]['hard_quota'] = block_size
                                                     except Exception as ex8:
                                                         pass
 
@@ -1233,7 +1333,53 @@ def ecs_collect_namespace_billing_data(influxclient, logger, ecsmanagmentapi, po
                                                     except Exception as ex8:
                                                         pass
 
-                                                # Create Influx DB Info Dictionary for our string fields and add it to the db list
+                                                try:
+                                                    ecsdata[bucket_name]['soft_quota_utilization'] = float(soft_quota_utilization)
+                                                except Exception as ex7:
+                                                    try:
+                                                        # We're here because trying to convert to a float failed.
+                                                        ecsdata[bucket_name]['soft_quota_utilization'] = soft_quota_utilization
+                                                    except Exception as ex8:
+                                                        pass
+
+                                                try:
+                                                    ecsdata[bucket_name]['hard_quota_utilization'] = float(hard_quota_utilization)
+                                                except Exception as ex7:
+                                                    try:
+                                                        # We're here because trying to convert to a float failed.
+                                                        ecsdata[bucket_name]['hard_quota_utilization'] = hard_quota_utilization
+                                                    except Exception as ex8:
+                                                        pass
+
+                                                try:
+                                                    ecsdata[bucket_name]['total_protected_size'] = float(total_protected_size_bytes)
+                                                except Exception as ex7:
+                                                    try:
+                                                        # We're here because trying to convert to a float failed.
+                                                        ecsdata[bucket_name]['total_protected_size'] = total_protected_size_bytes
+                                                    except Exception as ex8:
+                                                        pass
+
+                                                try:
+                                                    ecsdata[bucket_name]['soft_quota_utilization_protected'] = float(soft_quota_utilization_protected)
+                                                except Exception as ex7:
+                                                    try:
+                                                        # We're here because trying to convert to a float failed.
+                                                        ecsdata[bucket_name]['soft_quota_utilization_protected'] = soft_quota_utilization_protected
+                                                    except Exception as ex8:
+                                                        pass
+
+                                                try:
+                                                    ecsdata[bucket_name]['hard_quota_utilization_protected'] = float(hard_quota_utilization_protected)
+                                                except Exception as ex7:
+                                                    try:
+                                                        # We're here because trying to convert to a float failed.
+                                                        ecsdata[bucket_name]['hard_quota_utilization_protected'] = hard_quota_utilization_protected
+                                                    except Exception as ex8:
+                                                        pass
+
+                                                # Create Influx DB Info Dictionary for
+                                                # our string fields and add it to the db list
                                                 db_json = {
                                                     "measurement": target_name,
                                                     "tags": tags,
@@ -1255,6 +1401,152 @@ def ecs_collect_namespace_billing_data(influxclient, logger, ecsmanagmentapi, po
                                             except Exception as ex:
                                                 logger.error(MODULE_NAME + '::ecs_collect_namespace_billing_data()::The following unexpected '
                                                                            'exception occurred: ' + str(ex) + "\n" + traceback.format_exc())
+                                # Let log namespace level info
+                                tags_ns['vdc'] = _ecsVDCLookup.vdc_json[ecsconnection.authentication.host]
+                                tags_ns['namespace'] = ns_name
+                                ecsdata_ns[ns_name] = {}
+
+                                # Calculate average object sizes for the namespace if
+                                # objects and size are greater than zero
+                                if ns_total_objects_f > 0:
+                                    if ns_total_size_f > 0:
+                                        ns_average_object_size_f = ns_total_size_f / ns_total_objects_f
+                                    else:
+                                        ns_average_object_size_f = 0.0
+                                else:
+                                    ns_average_object_size_f = 0.0
+
+                                # If we have hard and / or soft quotas
+                                # lets calculate quota utilization %
+                                if ns_notification_size_bytes > 0:
+                                    if ns_total_size_bytes > 0:
+                                        ns_soft_quota_utilization = ns_total_size_bytes / ns_notification_size_bytes
+                                        ns_soft_quota_utilization_protected = ns_total_protected_size_bytes / ns_notification_size_bytes
+                                    else:
+                                        ns_soft_quota_utilization = 0
+                                        ns_soft_quota_utilization_protected = 0
+                                else:
+                                    ns_soft_quota_utilization = 0
+                                    ns_soft_quota_utilization_protected = 0
+
+                                if ns_block_size_bytes > 0:
+                                    if ns_total_size_bytes > 0:
+                                        ns_hard_quota_utilization = ns_total_size_bytes / ns_block_size_bytes
+                                        ns_hard_quota_utilization_protected = ns_total_protected_size_bytes / ns_block_size_bytes
+                                    else:
+                                        ns_hard_quota_utilization = 0
+                                        ns_hard_quota_utilization_protected = 0
+                                else:
+                                    ns_hard_quota_utilization = 0
+                                    ns_hard_quota_utilization_protected = 0
+
+                                # Add namespace values to the array for writing to Influx
+                                try:
+                                    ecsdata_ns[ns_name]['ns_average_size'] = float(ns_average_object_size_f)
+                                except Exception as ex5:
+                                    try:
+                                        # We're here because trying to convert to a float failed.
+                                        ecsdata_ns[ns_name]['ns_average_size'] = ns_average_object_size_f
+                                    except Exception as ex6:
+                                        pass
+
+                                try:
+                                    ecsdata_ns[ns_name]['ns_hard_quota'] = float(ns_block_size)
+                                except Exception as ex5:
+                                    try:
+                                        # We're here because trying to convert to a float failed.
+                                        ecsdata_ns[ns_name]['ns_hard_quota'] = ns_block_size
+                                    except Exception as ex6:
+                                        pass
+
+                                try:
+                                    ecsdata_ns[ns_name]['ns_soft_quota'] = float(ns_notification_size)
+                                except Exception as ex7:
+                                    try:
+                                        # We're here because trying to convert to a float failed.
+                                        ecsdata_ns[ns_name]['ns_soft_quota'] = ns_notification_size
+                                    except Exception as ex8:
+                                        pass
+
+                                try:
+                                    ecsdata_ns[ns_name]['ns_total_size'] = float(ns_total_size_bytes)
+                                except Exception as ex1:
+                                    try:
+                                        # We're here because trying to convert to a float failed.
+                                        ecsdata_ns[ns_name]['ns_total_size'] = ns_total_size_bytes
+                                    except Exception as ex2:
+                                        pass
+
+                                try:
+                                    ecsdata_ns[ns_name]['ns_total_objects'] = float(ns_total_objects_f)
+                                except Exception as ex1:
+                                    try:
+                                        # We're here because trying to convert to a float failed.
+                                        ecsdata_ns[ns_name]['ns_total_objects'] = ns_total_objects_f
+                                    except Exception as ex2:
+                                        pass
+
+                                try:
+                                    ecsdata_ns[ns_name]['ns_total_protected_size'] = float(ns_total_protected_size_bytes)
+                                except Exception as ex1:
+                                    try:
+                                        # We're here because trying to convert to a float failed.
+                                        ecsdata_ns[ns_name]['ns_total_protected_size'] = ns_total_protected_size_bytes
+                                    except Exception as ex2:
+                                        pass
+
+                                try:
+                                    ecsdata_ns[ns_name]['ns_soft_quota_utilization'] = float(ns_soft_quota_utilization)
+                                except Exception as ex1:
+                                    try:
+                                        # We're here because trying to convert to a float failed.
+                                        ecsdata_ns[ns_name]['ns_soft_quota_utilization'] = ns_soft_quota_utilization
+                                    except Exception as ex2:
+                                        pass
+
+                                try:
+                                    ecsdata_ns[ns_name]['ns_hard_quota_utilization'] = float(ns_hard_quota_utilization)
+                                except Exception as ex1:
+                                    try:
+                                        # We're here because trying to convert to a float failed.
+                                        ecsdata_ns[ns_name]['ns_hard_quota_utilization'] = ns_hard_quota_utilization
+                                    except Exception as ex2:
+                                        pass
+
+                                try:
+                                    ecsdata_ns[ns_name]['ns_soft_quota_utilization_protected'] = float(ns_soft_quota_utilization_protected)
+                                except Exception as ex1:
+                                    try:
+                                        # We're here because trying to convert to a float failed.
+                                        ecsdata_ns[ns_name]['ns_soft_quota_utilization_protected'] = ns_soft_quota_utilization_protected
+                                    except Exception as ex2:
+                                        pass
+
+                                try:
+                                    ecsdata_ns[ns_name]['ns_hard_quota_utilization_protected'] = float(ns_hard_quota_utilization_protected)
+                                except Exception as ex1:
+                                    try:
+                                        # We're here because trying to convert to a float failed.
+                                        ecsdata_ns[ns_name]['ns_hard_quota_utilization_protected'] = ns_hard_quota_utilization_protected
+                                    except Exception as ex2:
+                                        pass
+                                # Create Influx DB Info Dictionary for
+                                # our string fields and add it to the db list
+                                db_json_ns = {
+                                    "measurement": target_name_ns,
+                                    "tags": tags_ns,
+                                    "fields": ecsdata_ns[ns_name],
+                                    "time": current_time
+                                }
+                                db_array_ns.append(db_json_ns.copy())
+
+                                # Write data to Influx
+                                influxclient.write_points(db_array_ns)
+
+                                # Dump array for debug
+                                logger.debug(MODULE_NAME + '::ecs_collect_namespace_billing_data()::'
+                                                           'Namespace Billing db_array is: \r\n\r\n'.join(str(db_array_ns)))
+
                         else:
                             # We should have found the namespace list in the dictionary.  We have an issue
                             logger.info(MODULE_NAME + '::ecs_collect_namespace_billing_data()::'
