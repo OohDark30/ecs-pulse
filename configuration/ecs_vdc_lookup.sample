@@ -1,12 +1,10 @@
 {
-  "xx.xx.xx.xx": "ECSCSE-test-vdc1",
-  "xx.xx.xx.xx": "ECSCSE-test-vdc1",
-  "xx.xx.xx.xx": "ECSCSE-test-vdc1",
-  "xx.xx.xx.xx": "ECSCSE-test-vdc1",
-  "xx.xx.xx.xx": "ECSCSE-test-vdc1",
-  "xx.xx.xx.xx": "ECSCSE-test-vdc2",
-  "xx.xx.xx.xx": "ECSCSE-test-vdc2",
-  "xx.xx.xx.xx": "ECSCSE-test-vdc2",
-  "xx.xx.xx.xx": "ECSCSE-test-vdc2",
-  "xx.xx.xx.xx": "ECSCSE-test-vdc2"
+  "10.246.155.71": "NEW-BOS-DEMO",
+  "10.246.155.72": "NEW-BOS-DEMO",
+  "10.246.155.73": "NEW-BOS-DEMO",
+  "10.246.155.74": "NEW-BOS-DEMO",
+  "10.246.155.75": "NEW-BOS-DEMO",
+  "10.246.155.76": "NEW-BOS-DEMO",
+  "10.246.155.77": "NEW-BOS-DEMO",
+  "10.246.155.78": "NEW-BOS-DEMO"
 }

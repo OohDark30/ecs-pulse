@@ -418,8 +418,8 @@ class ECSManagementAPI(object):
                         break
                 else:
                     self.logger.error('ECSManagementAPI::get_namespace_billing_data()::/object/billing info '
-                                      'call against host ' + self.authentication.host + ' failed with a status code of ' + str(r.status_code))
-                    self.response_json = None
+                                      'call against host ' + self.authentication.host + ' for namespace ' + namespace + ' and bucket ' + bucket + ' failed with a status code of ' + str(r.status_code))
+                    self.response_xml_file = None
                     break
         return self.response_xml_file
 

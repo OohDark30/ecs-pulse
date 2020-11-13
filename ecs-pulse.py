@@ -1193,9 +1193,9 @@ def ecs_collect_namespace_billing_data(influxclient, logger, ecsmanagmentapi, po
                                         billing_data_file = ecsconnection.get_namespace_billing_data(ns_name, bucket_name, tempdir)
 
                                         if billing_data_file is None:
+                                            # If we had an issue just log the error and keep going to the next bucket
                                             logger.info(MODULE_NAME + '::ecs_collect_namespace_billing_data()::'
-                                                                      'Unable to retrieve Metering information for ' + ns_id )
-                                            return
+                                                                      'Unable to retrieve Metering information for ' + ns_name + ' and bucket ' + bucket_name)
                                         else:
                                             # We have a metering file for the bucket and namespace so lets
                                             # parse it and create an InfluxDB datapoint
